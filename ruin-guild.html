@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>廢墟公會聯盟</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
+#login-screen h1{font-size:28px;font-weight:600;color:#c9a84c;letter-spacing:0.05em}
+#login-screen p{font-size:14px;color:#888;margin-top:-8px}
+#login-screen input{padding:10px 16px;font-size:15px;border-radius:8px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;width:240px;text-align:center}
+#login-screen button{padding:10px 32px;font-size:15px;border-radius:8px;border:none;background:#c9a84c;color:#0f0f1a;font-weight:600;cursor:pointer}
+#login-screen button:hover{background:#e0bc5e}
+#game{display:none;max-width:760px;margin:0 auto;padding:12px}
+.top-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #222}
+.guild-title{font-size:18px;font-weight:600;color:#c9a84c}
+.guild-sub{font-size:12px;color:#666;margin-top:2px}
+.player-badge{font-size:12px;background:#1a1a2e;border:1px solid #333;padding:4px 10px;border-radius:99px;color:#aaa}
+.res-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.res-card{background:#1a1a2e;border:1px solid #222;border-radius:8px;padding:8px 10px;text-align:center}
+.res-label{font-size:10px;color:#666;margin-bottom:2px}
+.res-val{font-size:15px;font-weight:600;color:#e0e0e0}
+.res-rate{font-size:10px;color:#555;margin-top:1px}
+.tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid #222;border-radius:8px;overflow:hidden}
+.tab{flex:1;padding:8px;font-size:13px;background:transparent;border:none;cursor:pointer;color:#666;transition:background 0.15s}
+.tab.active{background:#1a1a2e;color:#c9a84c;font-weight:500}
+.panel{display:none}.panel.active{display:block}
+.section-title{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.card{background:#1a1a2e;border:1px solid #222;border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.card-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-name{font-size:14px;font-weight:500;color:#e0e0e0}
+.hero-sub{font-size:12px;color:#666;margin-top:2px}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500}
+.badge-idle{background:#1a2e1a;color:#4caf50;border:1px solid #2d4a2d}
+.badge-quest{background:#1a2040;color:#5b8dee;border:1px solid #2d3a60}
+.btn{padding:5px 12px;font-size:12px;border:1px solid #333;border-radius:6px;background:transparent;cursor:pointer;color:#aaa;white-space:nowrap;transition:all 0.15s}
+.btn:hover{background:#252535;color:#e0e0e0}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn-gold{background:#2a2010;color:#c9a84c;border-color:#4a3a10}
+.btn-gold:hover{background:#3a3015}
+.btn-blue{background:#1a2040;color:#5b8dee;border-color:#2d3a60}
+.btn-blue:hover{background:#222d50}
+.progress-bar{height:4px;background:#222;border-radius:2px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:#5b8dee;border-radius:2px;transition:width 0.5s linear}
+.progress-label{font-size:10px;color:#555;margin-top:3px}
+.loot-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.loot-tag{font-size:10px;padding:2px 6px;background:#111;border-radius:4px;color:#666;border:1px solid #222}
+.sync-bar{font-size:10px;color:#444;text-align:right;margin-bottom:6px}
+.log-box{background:#111;border-radius:8px;padding:8px 10px;max-height:200px;overflow-y:auto}
+.log-entry{font-size:12px;color:#666;line-height:1.8;border-bottom:1px solid #1a1a1a;padding:1px 0}
+.log-entry:last-child{border-bottom:none}
+.log-time{font-size:10px;color:#444;margin-right:6px}
+.empty{font-size:13px;color:#444;text-align:center;padding:24px}
+.alliance-section{margin-bottom:16px}
+.player-guild-card{background:#111;border:1px solid #222;border-radius:10px;padding:10px 14px;margin-bottom:6px}
+.pgc-header{display:flex;align-items:center;justify-content:space-between}
+.pgc-name{font-size:13px;font-weight:500;color:#c9a84c}
+.pgc-stats{font-size:11px;color:#555;margin-top:3px}
+.alliance-project{background:#1a1a2e;border:1px solid #2d3050;border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.ap-name{font-size:14px;font-weight:500;color:#5b8dee}
+.ap-desc{font-size:12px;color:#555;margin-top:2px}
+.ap-progress{margin-top:8px}
+.ap-bar{height:6px;background:#111;border-radius:3px;overflow:hidden;margin-top:4px}
+.ap-fill{height:100%;background:linear-gradient(90deg,#2d3a60,#5b8dee);border-radius:3px;transition:width 0.5s}
+.ap-label{font-size:11px;color:#555;margin-top:3px;display:flex;justify-content:space-between}
+.contrib-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.divider{border:none;border-top:1px solid #1a1a1a;margin:12px 0}
+.expedition-card{background:#1a1a2e;border:1px solid #2d3050;border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.exp-name{font-size:14px;font-weight:500;color:#e0b060}
+.exp-desc{font-size:12px;color:#555;margin-top:2px}
+.exp-req{font-size:11px;color:#444;margin-top:4px}
+.participants{margin-top:8px}
+.participant-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.participant-name{font-size:12px;color:#aaa}
+.participant-hero{font-size:11px;color:#555}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>⚔️ 廢墟公會聯盟</h1>
+  <p>輸入你的公會名稱來開始遊戲</p>
+  <input type="text" id="nickname-input" placeholder="公會名稱（例如：星辰公會）" maxlength="12">
+  <button onclick="enterGame()">進入遊戲</button>
+</div>
+
+<div id="game">
+  <div class="top-header">
+    <div>
+      <div class="guild-title" id="my-guild-title">⚔️ 我的公會</div>
+      <div class="guild-sub">等級 <span id="guild-level">1</span> · 聲望 <span id="guild-fame-top">0</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sync-bar" id="sync-bar">同步中...</div>
+      <div class="player-badge" id="player-badge">玩家</div>
+    </div>
+  </div>
+
+  <div class="res-bar">
+    <div class="res-card"><div class="res-label">💰 金幣</div><div class="res-val" id="res-gold">0</div><div class="res-rate" id="rate-gold"></div></div>
+    <div class="res-card"><div class="res-label">🧪 魔素</div><div class="res-val" id="res-mana">0</div><div class="res-rate" id="rate-mana"></div></div>
+    <div class="res-card"><div class="res-label">🔩 零件</div><div class="res-val" id="res-parts">0</div></div>
+    <div class="res-card"><div class="res-label">✨ 聲望</div><div class="res-val" id="res-fame">0</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('heroes',this)">🧙 冒險者</button>
+    <button class="tab" onclick="switchTab('dungeon',this)">🏚️ 地下城</button>
+    <button class="tab" onclick="switchTab('upgrade',this)">🏛️ 升級</button>
+    <button class="tab" onclick="switchTab('alliance',this)">🤝 聯盟</button>
+    <button class="tab" onclick="switchTab('log',this)">📜 戰報</button>
+  </div>
+
+  <div id="tab-heroes" class="panel active">
+    <div class="section-title">目前冒險者</div>
+    <div id="hero-list"></div>
+    <div class="section-title" style="margin-top:12px">雇用新冒險者</div>
+    <div id="hire-list"></div>
+  </div>
+  <div id="tab-dungeon" class="panel">
+    <div class="section-title">可探索地下城</div>
+    <div id="dungeon-list"></div>
+  </div>
+  <div id="tab-upgrade" class="panel">
+    <div class="section-title">公會設施</div>
+    <div id="upgrade-list"></div>
+  </div>
+  <div id="tab-alliance" class="panel">
+    <div class="alliance-section">
+      <div class="section-title">聯盟共同建造</div>
+      <div id="alliance-projects"></div>
+    </div>
+    <hr class="divider">
+    <div class="alliance-section">
+      <div class="section-title">聯合遠征</div>
+      <div id="expeditions"></div>
+    </div>
+    <hr class="divider">
+    <div class="alliance-section">
+      <div class="section-title">其他公會</div>
+      <div id="other-guilds"></div>
+    </div>
+  </div>
+  <div id="tab-log" class="panel">
+    <div class="section-title">最近戰報</div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBuyxUGnWK6fwQ_1-p1GJIyQC7uqAUKtww",
+  authDomain: "ruin-guide.firebaseapp.com",
+  databaseURL: "https://ruin-guide-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ruin-guide",
+  storageBucket: "ruin-guide.firebasestorage.app",
+  messagingSenderId: "507865743667",
+  appId: "1:507865743667:web:274094e94f049cfbbe7e46"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const HERO_TEMPLATES = [
+  {id:"fighter",name:"鐵拳 葛雷",cls:"戰士",icon:"⚔️",atk:8,spd:1.0,cost:{gold:50},flavor:"老傷滿身，打架第一",unlock:0},
+  {id:"mage",name:"星塵 米蘭",cls:"法師",icon:"🔮",atk:5,spd:0.8,cost:{gold:80,mana:20},flavor:"魔力過剩，偶爾走火",unlock:0},
+  {id:"rogue",name:"暗影 柯爾",cls:"盜賊",icon:"🗡️",atk:6,spd:1.4,cost:{gold:100,mana:10},flavor:"安靜，出手快",unlock:1},
+  {id:"healer",name:"聖光 艾娜",cls:"聖職者",icon:"💊",atk:3,spd:0.7,cost:{gold:120,mana:40},flavor:"補血永遠慢半拍",unlock:1},
+  {id:"archer",name:"狂風 艾絲",cls:"弓箭手",icon:"🏹",atk:7,spd:1.2,cost:{gold:150,mana:30},flavor:"從不喊累",unlock:2},
+  {id:"tank",name:"鐵壁 巴爾",cls:"聖騎士",icon:"🛡️",atk:4,spd:0.6,cost:{gold:200,mana:60,parts:20},flavor:"他的盾幾乎擋住一切",unlock:2},
+];
+
+const DUNGEONS = [
+  {id:"cave",name:"幽暗洞窟",icon:"🦇",desc:"入門地下城",req:{heroCount:1,fame:0},time:15,loot:{gold:[5,15],mana:[0,5]},xp:10,fameReward:2},
+  {id:"crypt",name:"古老地穴",icon:"💀",desc:"骷髏橫行的腐蝕地穴",req:{heroCount:2,fame:10},time:25,loot:{gold:[12,25],mana:[5,15],parts:[0,8]},xp:20,fameReward:5},
+  {id:"dungeon",name:"廢棄礦坑",icon:"⛏️",desc:"深入地下，礦物豐富",req:{heroCount:2,fame:30},time:40,loot:{gold:[20,40],mana:[8,20],parts:[5,15]},xp:35,fameReward:8},
+  {id:"tower",name:"魔法師之塔",icon:"🗼",desc:"扭曲空間，魔法陷阱",req:{heroCount:3,fame:60},time:60,loot:{gold:[30,60],mana:[20,50],parts:[5,20]},xp:60,fameReward:15},
+  {id:"abyss",name:"深淵裂縫",icon:"🌑",desc:"古代惡魔沉睡之地",req:{heroCount:4,fame:120},time:90,loot:{gold:[60,120],mana:[40,80],parts:[20,40]},xp:100,fameReward:25},
+];
+
+const UPGRADES = [
+  {id:"tavern",name:"酒館擴建",desc:"冒險者上限 +2",icon:"🍺",levels:[{cost:{gold:100}},{cost:{gold:300,mana:50}},{cost:{gold:600,mana:120,parts:30}}]},
+  {id:"forge",name:"鍛造工坊",desc:"攻擊力 +20%",icon:"🔨",levels:[{cost:{gold:150,parts:20}},{cost:{gold:400,parts:60}},{cost:{gold:900,parts:150,mana:80}}]},
+  {id:"library",name:"魔法圖書館",desc:"魔素生產 +50%",icon:"📚",levels:[{cost:{gold:200,mana:30}},{cost:{gold:500,mana:100}},{cost:{gold:1000,mana:200,parts:50}}]},
+  {id:"vault",name:"金庫強化",desc:"金幣上限 ×2",icon:"🏦",levels:[{cost:{gold:80,parts:10}},{cost:{gold:250,parts:40}},{cost:{gold:600,parts:100}}]},
+  {id:"scout",name:"斥候小屋",desc:"探索速度 +25%",icon:"🗺️",levels:[{cost:{gold:300,mana:40}},{cost:{gold:700,mana:100,parts:30}},{cost:{gold:1400,mana:200,parts:80}}]},
+];
+
+const ALLIANCE_PROJECTS = [
+  {id:"wall",name:"聯盟城牆",icon:"🧱",desc:"所有公會防禦 +10%，需全員貢獻建材",totalParts:500,totalGold:200,effect:"全員探索速度 +10%"},
+  {id:"portal",name:"傳送門",icon:"🌀",desc:"解鎖聯合遠征功能，需各公會貢獻魔素",totalMana:400,totalGold:300,effect:"解鎖聯合遠征"},
+  {id:"shrine",name:"英雄神殿",icon:"🏯",desc:"所有冒險者經驗值 +25%",totalFame:100,totalGold:500,effect:"全員經驗值 +25%"},
+];
+
+const EXPEDITIONS = [
+  {id:"dragon",name:"巨龍巢穴",icon:"🐉",desc:"需要多個公會合力討伐，獎勵豐厚",minGuilds:2,time:120,loot:{gold:[200,400],mana:[100,200],parts:[50,100]},fameReward:50},
+  {id:"titan",name:"古代巨人遺跡",icon:"🗿",desc:"傳說中的遺跡，單一公會無法攻克",minGuilds:3,time:180,loot:{gold:[400,800],mana:[200,400],parts:[100,200]},fameReward:100},
+];
+
+let myName = '';
+let S = null;
+let activeTab = 'heroes';
+let allGuilds = {};
+let allianceData = {};
+
+function defaultState(name) {
+  return {
+    name, gold:100, mana:0, parts:0, fame:0,
+    heroSlots:4, heroes:[], activeQuests:{}, questData:{},
+    upgrades:{tavern:0,forge:0,library:0,vault:0,scout:0},
+    log:[], lastTick: Date.now(),
+  };
+}
+
+function fmt(n){return Math.floor(n).toLocaleString();}
+function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function resPretty(k){return{gold:'💰',mana:'🧪',parts:'🔩',fame:'✨'}[k]||k;}
+
+function getBonus(){
+  const ap = allianceData.projects||{};
+  const wallDone = ap.wall && ap.wall.done;
+  const shrineDone = ap.shrine && ap.shrine.done;
+  return {
+    atkMult: 1+(S.upgrades.forge||0)*0.2,
+    manaRateMult: 1+(S.upgrades.library||0)*0.5,
+    speedMult: (1+(S.upgrades.scout||0)*0.25) * (wallDone?1.1:1),
+    goldCap: 500*Math.pow(2,S.upgrades.vault||0),
+    xpMult: shrineDone?1.25:1,
+  };
+}
+
+function guildLevel(){
+  if(S.fame>=300)return 5;
+  if(S.fame>=120)return 4;
+  if(S.fame>=50)return 3;
+  if(S.fame>=15)return 2;
+  return 1;
+}
+
+function idleHeroes(){
+  const busy = Object.values(S.activeQuests||{}).flat();
+  return (S.heroes||[]).filter(h=>!busy.includes(h.id));
+}
+
+function addLog(msg){
+  const now=new Date();
+  const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  if(!S.log) S.log=[];
+  S.log.unshift({t,msg});
+  if(S.log.length>80) S.log.pop();
+}
+
+async function saveGuild(){
+  try {
+    S.lastTick = Date.now();
+    await set(ref(db, 'guilds/'+myName), S);
+    const t=new Date();
+    const ts=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0')+':'+t.getSeconds().toString().padStart(2,'0');
+    document.getElementById('sync-bar').textContent='✅ '+ts;
+  } catch(e){
+    document.getElementById('sync-bar').textContent='⚠️ 同步失敗';
+  }
+}
+
+function offlineCalc(){
+  const now=Date.now();
+  const dt=Math.min((now-(S.lastTick||now))/1000,3600);
+  if(dt>2){
+    const bonus=getBonus();
+    const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
+    S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1*dt);
+    S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult*dt);
+  }
+  S.lastTick=Date.now();
+}
+
+window.enterGame = async function(){
+  const input=document.getElementById('nickname-input').value.trim();
+  if(!input){alert('請輸入公會名稱');return;}
+  myName=input;
+  const snap=await get(ref(db,'guilds/'+myName));
+  if(snap.exists()){
+    S=snap.val();
+    if(!S.questData) S.questData={};
+    if(!S.upgrades) S.upgrades={tavern:0,forge:0,library:0,vault:0,scout:0};
+  } else {
+    S=defaultState(myName);
+    addLog('🏰 '+myName+' 公會正式成立！');
+    await saveGuild();
+  }
+  offlineCalc();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('game').style.display='block';
+  document.getElementById('player-badge').textContent=myName;
+  document.getElementById('my-guild-title').textContent='⚔️ '+myName;
+
+  onValue(ref(db,'guilds'), snap=>{
+    allGuilds = snap.val()||{};
+    if(activeTab==='alliance') renderAlliance();
+    renderOtherGuilds();
+  });
+  onValue(ref(db,'alliance'), snap=>{
+    allianceData = snap.val()||{};
+    if(activeTab==='alliance') renderAlliance();
+  });
+
+  renderAll();
+  setInterval(tick, 1000);
+  setInterval(saveGuild, 20000);
+  setInterval(()=>{if(activeTab==='heroes')renderHeroes();else if(activeTab==='dungeon')renderDungeons();}, 3000);
+};
+
+function tick(){
+  if(!S) return;
+  const bonus=getBonus();
+  const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
+  S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1);
+  S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult);
+  S.lastTick=Date.now();
+  checkQuests();
+  updateResourceDisplay();
+}
+
+function checkQuests(){
+  if(!S||!S.questData) return;
+  const bonus=getBonus();
+  let changed=false;
+  for(const[dId,qData] of Object.entries(S.questData)){
+    const d=DUNGEONS.find(x=>x.id===dId);
+    if(!d) continue;
+    const elapsed=(Date.now()-qData.startTime)/1000;
+    if(elapsed>=d.time/bonus.speedMult){
+      const heroId=(S.activeQuests[dId]||[])[0];
+      const hero=(S.heroes||[]).find(h=>h.id===heroId);
+      const gold=rnd(...d.loot.gold);
+      const mana=d.loot.mana?rnd(...d.loot.mana):0;
+      const parts=d.loot.parts?rnd(...d.loot.parts):0;
+      S.gold=Math.min(bonus.goldCap,S.gold+gold);
+      S.mana=Math.min(9999,S.mana+mana);
+      S.parts=Math.min(9999,S.parts+parts);
+      S.fame+=d.fameReward;
+      if(hero){
+        hero.xp+=Math.round(d.xp*bonus.xpMult);
+        if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;addLog(`⬆️ ${hero.name} 升到等級 ${hero.level}！`);}
+      }
+      delete S.activeQuests[dId];
+      delete S.questData[dId];
+      const lootStr=[gold&&`💰${gold}`,mana&&`🧪${mana}`,parts&&`🔩${parts}`].filter(Boolean).join(' ');
+      addLog(`🎉 ${hero?hero.name:'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
+      changed=true;
+    }
+  }
+  if(changed){saveGuild();renderAll();}
+}
+
+function updateResourceDisplay(){
+  if(!S) return;
+  const bonus=getBonus();
+  const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
+  document.getElementById('res-gold').textContent=fmt(S.gold);
+  document.getElementById('res-mana').textContent=fmt(S.mana);
+  document.getElementById('res-parts').textContent=fmt(S.parts);
+  document.getElementById('res-fame').textContent=fmt(S.fame);
+  document.getElementById('guild-fame-top').textContent=fmt(S.fame);
+  document.getElementById('guild-level').textContent=guildLevel();
+  document.getElementById('rate-gold').textContent=(S.heroes||[]).length>0?`+${((S.heroes||[]).length*0.1).toFixed(1)}/秒`:'';
+  document.getElementById('rate-mana').textContent=mageCount>0?`+${(mageCount*0.3*bonus.manaRateMult).toFixed(1)}/秒`:'';
+}
+
+function renderHeroes(){
+  if(!S) return;
+  const heroes=S.heroes||[];
+  const heroList=document.getElementById('hero-list');
+  const hireList=document.getElementById('hire-list');
+  if(heroes.length===0){
+    heroList.innerHTML='<div class="empty">還沒有冒險者，從下方雇用吧</div>';
+  } else {
+    heroList.innerHTML=heroes.map(h=>{
+      const questEntry=Object.entries(S.activeQuests||{}).find(([,ids])=>ids.includes(h.id));
+      if(questEntry){
+        const [dId]=questEntry;
+        const qData=S.questData&&S.questData[dId];
+        const d=DUNGEONS.find(x=>x.id===dId);
+        let progHtml='';
+        if(qData&&d){
+          const bonus=getBonus();
+          const elapsed=(Date.now()-qData.startTime)/1000;
+          const total=d.time/bonus.speedMult;
+          const pct=Math.min(100,elapsed/total*100);
+          progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${d.icon} ${d.name} — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
+        }
+        return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
+      }
+      const available=DUNGEONS.filter(d=>S.fame>=d.req.fame&&idleHeroes().length>=d.req.heroCount&&!(S.activeQuests||{})[d.id]);
+      const opts=available.length>0?available.map(d=>`<button class="btn" onclick="sendHero('${h.id}','${d.id}')">${d.icon}${d.name}</button>`).join(''):'<span style="font-size:11px;color:#444">無可用地下城</span>';
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-idle">待命</span></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">${opts}</div></div>`;
+    }).join('');
+  }
+  const gl=guildLevel();
+  const hired=heroes.map(h=>h.id);
+  const available=HERO_TEMPLATES.filter(t=>!hired.includes(t.id)&&t.unlock<=gl-1);
+  if(heroes.length>=(S.heroSlots||4)){
+    hireList.innerHTML='<div class="empty">公會人數已滿，升級酒館以容納更多</div>';
+  } else if(available.length===0){
+    hireList.innerHTML='<div class="empty">提升聲望後解鎖更多冒險者</div>';
+  } else {
+    hireList.innerHTML=available.map(t=>{
+      const costStr=Object.entries(t.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+      const canAfford=Object.entries(t.cost).every(([k,v])=>S[k]>=v);
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${t.icon} ${t.name}</div><div class="hero-sub">${t.cls} · ${t.flavor}</div></div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="hireHero('${t.id}')">雇用 (${costStr})</button></div></div>`;
+    }).join('');
+  }
+}
+
+window.hireHero = function(id){
+  const t=HERO_TEMPLATES.find(x=>x.id===id);
+  if(!t) return;
+  if((S.heroes||[]).length>=(S.heroSlots||4)){alert('公會人數已滿！');return;}
+  for(const[k,v]of Object.entries(t.cost)){if(S[k]<v){alert(`${resPretty(k)}不足！`);return;}}
+  for(const[k,v]of Object.entries(t.cost)){S[k]-=v;}
+  if(!S.heroes) S.heroes=[];
+  S.heroes.push({id:t.id,name:t.name,cls:t.cls,icon:t.icon,atk:t.atk,spd:t.spd,level:1,xp:0});
+  addLog(`✅ 雇用了 ${t.icon} ${t.name}`);
+  saveGuild();renderAll();
+};
+
+window.sendHero = function(heroId,dungeonId){
+  if((S.activeQuests||{})[dungeonId]){alert('此地下城已有探索中');return;}
+  const d=DUNGEONS.find(x=>x.id===dungeonId);
+  if(!d) return;
+  if(!S.activeQuests) S.activeQuests={};
+  if(!S.questData) S.questData={};
+  S.activeQuests[dungeonId]=[heroId];
+  S.questData[dungeonId]={startTime:Date.now(),heroId};
+  const hero=(S.heroes||[]).find(h=>h.id===heroId);
+  addLog(`🏃 ${hero?hero.name:'冒險者'} 出發前往 ${d.icon} ${d.name}`);
+  saveGuild();renderAll();
+};
+
+function renderDungeons(){
+  if(!S) return;
+  const bonus=getBonus();
+  document.getElementById('dungeon-list').innerHTML=DUNGEONS.map(d=>{
+    const locked=S.fame<d.req.fame;
+    const active=(S.activeQuests||{})[d.id];
+    const notEnough=!locked&&idleHeroes().length<d.req.heroCount;
+    const timeStr=Math.round(d.time/bonus.speedMult)+'秒';
+    const lootStr=Object.entries(d.loot).map(([k,[a,b]])=>`${resPretty(k)}${a}-${b}`).join(' ');
+    let progHtml='';
+    if(active){
+      const qData=S.questData&&S.questData[d.id];
+      if(qData){
+        const elapsed=(Date.now()-qData.startTime)/1000;
+        const total=d.time/bonus.speedMult;
+        const pct=Math.min(100,elapsed/total*100);
+        const heroName=(S.heroes||[]).find(h=>h.id===active[0])?.name||'隊伍';
+        progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${heroName} 探索中 — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
+      }
+    }
+    const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人</span>`:'';
+    return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}</div>`;
+  }).join('');
+}
+
+function renderUpgrades(){
+  if(!S) return;
+  document.getElementById('upgrade-list').innerHTML=UPGRADES.map(u=>{
+    const cur=S.upgrades[u.id]||0;
+    if(cur>=u.levels.length){
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">MAX</span></div><div class="hero-sub">${u.desc}</div></div></div></div>`;
+    }
+    const next=u.levels[cur];
+    const costStr=Object.entries(next.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+    const canAfford=Object.entries(next.cost).every(([k,v])=>S[k]>=v);
+    return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">Lv${cur}→${cur+1}</span></div><div class="hero-sub">${u.desc}</div><div style="font-size:11px;color:#444;margin-top:3px">費用：${costStr}</div></div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="doUpgrade('${u.id}')">升級</button></div></div>`;
+  }).join('');
+}
+
+window.doUpgrade = function(id){
+  const u=UPGRADES.find(x=>x.id===id);
+  const cur=S.upgrades[id]||0;
+  if(cur>=u.levels.length) return;
+  const next=u.levels[cur];
+  for(const[k,v]of Object.entries(next.cost)){if(S[k]<v){alert(`${resPretty(k)}不足`);return;}}
+  for(const[k,v]of Object.entries(next.cost)){S[k]-=v;}
+  S.upgrades[id]=cur+1;
+  if(id==='tavern') S.heroSlots=(S.heroSlots||4)+2;
+  addLog(`🏛️ 升級了 ${u.icon} ${u.name} 至 Lv${cur+1}`);
+  saveGuild();renderAll();
+};
+
+function renderAlliance(){
+  renderAllianceProjects();
+  renderExpeditions();
+  renderOtherGuilds();
+}
+
+function renderAllianceProjects(){
+  const projects=allianceData.projects||{};
+  document.getElementById('alliance-projects').innerHTML=ALLIANCE_PROJECTS.map(p=>{
+    const pData=projects[p.id]||{};
+    const done=pData.done||false;
+    const contribs=pData.contributions||{};
+    const totalNeeded=Object.entries(p).filter(([k])=>['totalParts','totalGold','totalMana','totalFame'].includes(k));
+    let totalProgress=0,totalRequired=0;
+    const needParts=Object.entries({gold:p.totalGold||0,mana:p.totalMana||0,parts:p.totalParts||0,fame:p.totalFame||0}).filter(([,v])=>v>0);
+    const myContrib=contribs[myName]||{};
+    if(done){
+      return `<div class="alliance-project"><div style="display:flex;align-items:center;justify-content:space-between"><div><div class="ap-name">${p.icon} ${p.name} ✅</div><div class="ap-desc">${p.effect}</div></div><span class="badge badge-idle">已完成</span></div></div>`;
+    }
+    let totalPct=0;
+    const resRows=needParts.map(([k,need])=>{
+      let gathered=0;
+      Object.values(contribs).forEach(c=>{gathered+=(c[k]||0);});
+      const pct=Math.min(100,gathered/need*100);
+      totalPct+=pct;
+      return `<div style="font-size:11px;color:#555;margin-top:4px">${resPretty(k)} ${fmt(gathered)}/${fmt(need)}<div class="ap-bar"><div class="ap-fill" style="width:${pct.toFixed(1)}%"></div></div></div>`;
+    }).join('');
+    const avgPct=needParts.length>0?totalPct/needParts.length:0;
+    const contribBtns=needParts.map(([k,need])=>{
+      const amounts=[10,50,100].filter(a=>a<=S[k]);
+      return amounts.map(a=>`<button class="btn btn-blue" onclick="contributeProject('${p.id}','${k}',${a})">${resPretty(k)}+${a}</button>`).join('');
+    }).join('');
+    return `<div class="alliance-project"><div class="ap-name">${p.icon} ${p.name}</div><div class="ap-desc">${p.desc}</div><div class="ap-desc" style="color:#5b8dee;margin-top:2px">完成效果：${p.effect}</div>${resRows}<div class="ap-label"><span>整體進度 ${avgPct.toFixed(0)}%</span><span>你已貢獻：${Object.entries(myContrib).map(([k,v])=>`${resPretty(k)}${v}`).join(' ')||'無'}</span></div><div class="contrib-row">${contribBtns||'<span style="font-size:11px;color:#444">資源不足，繼續探索吧</span>'}</div></div>`;
+  }).join('');
+}
+
+window.contributeProject = async function(projectId,resKey,amount){
+  if(S[resKey]<amount){alert('資源不足');return;}
+  S[resKey]-=amount;
+  const contribRef=ref(db,`alliance/projects/${projectId}/contributions/${myName}/${resKey}`);
+  const snap=await get(contribRef);
+  const cur=snap.exists()?snap.val():0;
+  await set(contribRef,cur+amount);
+  const p=ALLIANCE_PROJECTS.find(x=>x.id===projectId);
+  const allContribsSnap=await get(ref(db,`alliance/projects/${projectId}/contributions`));
+  const allContribs=allContribsSnap.val()||{};
+  const needParts=Object.entries({gold:p.totalGold||0,mana:p.totalMana||0,parts:p.totalParts||0,fame:p.totalFame||0}).filter(([,v])=>v>0);
+  let allDone=true;
+  for(const[k,need] of needParts){
+    let gathered=0;
+    Object.values(allContribs).forEach(c=>{gathered+=(c[k]||0);});
+    if(gathered<need){allDone=false;break;}
+  }
+  if(allDone){
+    await set(ref(db,`alliance/projects/${projectId}/done`),true);
+    addLog(`🎊 聯盟共同建造 ${p.icon} ${p.name} 完成！`);
+  } else {
+    addLog(`🤝 貢獻了 ${resPretty(resKey)}${amount} 給 ${p.icon} ${p.name}`);
+  }
+  saveGuild();
+};
+
+function renderExpeditions(){
+  const exps=allianceData.expeditions||{};
+  const portalDone=(allianceData.projects?.portal?.done)||false;
+  if(!portalDone){
+    document.getElementById('expeditions').innerHTML='<div class="empty">先完成聯盟共同建造「🌀 傳送門」才能發起聯合遠征</div>';
+    return;
+  }
+  document.getElementById('expeditions').innerHTML=EXPEDITIONS.map(e=>{
+    const eData=exps[e.id]||{};
+    const active=eData.active||false;
+    const participants=eData.participants||{};
+    const myJoined=participants[myName];
+    const count=Object.keys(participants).length;
+    const lootStr=Object.entries(e.loot).map(([k,[a,b]])=>`${resPretty(k)}${a}-${b}`).join(' ');
+    const timeStr=active&&eData.startTime?`剩 ${Math.max(0,Math.ceil(e.time-(Date.now()-eData.startTime)/1000))}秒`:`需 ${e.minGuilds} 個公會`;
+    const partList=Object.entries(participants).map(([gName,data])=>`<div class="participant-row"><span class="participant-name">⚔️ ${gName}</span><span class="participant-hero">${data.heroName||''}</span></div>`).join('');
+    const canJoin=!myJoined&&idleHeroes().length>0&&!active;
+    const heroOpts=idleHeroes().map(h=>`<option value="${h.id}">${h.icon} ${h.name}</option>`).join('');
+    return `<div class="expedition-card"><div class="card-row"><div><div class="exp-name">${e.icon} ${e.name}</div><div class="exp-desc">${e.desc}</div><div class="exp-req">${timeStr}</div></div>${active?'<span class="badge badge-quest">進行中</span>':''}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${e.fameReward}</span></div><div class="participants">${partList}</div>${canJoin?`<div style="display:flex;gap:6px;margin-top:8px;align-items:center"><select id="exp-hero-${e.id}" style="background:#111;color:#aaa;border:1px solid #333;border-radius:6px;padding:4px 8px;font-size:12px">${heroOpts}</select><button class="btn btn-blue" onclick="joinExpedition('${e.id}')">加入遠征</button></div>`:''}${!active&&count>=e.minGuilds&&!myJoined?`<button class="btn btn-gold" style="margin-top:8px;width:100%" onclick="startExpedition('${e.id}')">發動遠征！(${count}/${e.minGuilds}公會)</button>`:''}</div>`;
+  }).join('');
+}
+
+window.joinExpedition = async function(expId){
+  const heroId=document.getElementById('exp-hero-'+expId)?.value;
+  const hero=(S.heroes||[]).find(h=>h.id===heroId);
+  if(!hero){alert('請選擇冒險者');return;}
+  await set(ref(db,`alliance/expeditions/${expId}/participants/${myName}`),{heroId,heroName:hero.name+hero.icon});
+  addLog(`🗺️ ${hero.name} 加入聯合遠征 ${EXPEDITIONS.find(e=>e.id===expId)?.name}`);
+  saveGuild();
+};
+
+window.startExpedition = async function(expId){
+  await update(ref(db,`alliance/expeditions/${expId}`),{active:true,startTime:Date.now()});
+  addLog(`⚔️ 聯合遠征發動！`);
+  saveGuild();
+  setTimeout(()=>completeExpedition(expId), EXPEDITIONS.find(e=>e.id===expId).time*1000);
+};
+
+async function completeExpedition(expId){
+  const e=EXPEDITIONS.find(x=>x.id===expId);
+  const snap=await get(ref(db,`alliance/expeditions/${expId}`));
+  if(!snap.exists()||snap.val().completed) return;
+  const participants=snap.val().participants||{};
+  if(!participants[myName]) return;
+  const gold=rnd(...e.loot.gold);
+  const mana=rnd(...e.loot.mana);
+  const parts=rnd(...e.loot.parts);
+  const bonus=getBonus();
+  S.gold=Math.min(bonus.goldCap,S.gold+gold);
+  S.mana=Math.min(9999,S.mana+mana);
+  S.parts=Math.min(9999,S.parts+parts);
+  S.fame+=e.fameReward;
+  await set(ref(db,`alliance/expeditions/${expId}/completed`),true);
+  addLog(`🏆 聯合遠征完成！獲得 💰${gold} 🧪${mana} 🔩${parts} ✨+${e.fameReward}`);
+  saveGuild();renderAll();
+}
+
+function renderOtherGuilds(){
+  const others=Object.entries(allGuilds).filter(([n])=>n!==myName);
+  if(others.length===0){
+    document.getElementById('other-guilds').innerHTML='<div class="empty">目前只有你一個公會，把遊戲連結分享給朋友吧！</div>';
+    return;
+  }
+  document.getElementById('other-guilds').innerHTML=others.map(([name,g])=>{
+    const gl=g.fame>=300?5:g.fame>=120?4:g.fame>=50?3:g.fame>=15?2:1;
+    return `<div class="player-guild-card"><div class="pgc-header"><div class="pgc-name">⚔️ ${name}</div><span style="font-size:11px;color:#555">等級 ${gl}</span></div><div class="pgc-stats">冒險者 ${(g.heroes||[]).length} 人 · 聲望 ${fmt(g.fame||0)} · 💰${fmt(g.gold||0)} 🧪${fmt(g.mana||0)}</div></div>`;
+  }).join('');
+}
+
+function renderLog(){
+  const box=document.getElementById('log-box');
+  if(!S.log||S.log.length===0){box.innerHTML='<div class="empty">尚無戰報</div>';return;}
+  box.innerHTML=S.log.map(e=>`<div class="log-entry"><span class="log-time">${e.t}</span>${e.msg}</div>`).join('');
+}
+
+function renderAll(){
+  if(!S) return;
+  updateResourceDisplay();
+  if(activeTab==='heroes') renderHeroes();
+  else if(activeTab==='dungeon') renderDungeons();
+  else if(activeTab==='upgrade') renderUpgrades();
+  else if(activeTab==='alliance') renderAlliance();
+  else if(activeTab==='log') renderLog();
+}
+
+window.switchTab = function(name,el){
+  activeTab=name;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  renderAll();
+};
+</script>
+</body>
+</html>
