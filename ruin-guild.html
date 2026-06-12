@@ -189,11 +189,16 @@ const DUNGEONS = [
 ];
 
 const UPGRADES = [
-  {id:"tavern",name:"酒館擴建",desc:"冒險者上限 +2",icon:"🍺",levels:[{cost:{gold:100}},{cost:{gold:300,mana:50}},{cost:{gold:600,mana:120,parts:30}}]},
-  {id:"forge",name:"鍛造工坊",desc:"攻擊力 +20%",icon:"🔨",levels:[{cost:{gold:150,parts:20}},{cost:{gold:400,parts:60}},{cost:{gold:900,parts:150,mana:80}}]},
-  {id:"library",name:"魔法圖書館",desc:"魔素生產 +50%",icon:"📚",levels:[{cost:{gold:200,mana:30}},{cost:{gold:500,mana:100}},{cost:{gold:1000,mana:200,parts:50}}]},
-  {id:"vault",name:"金庫強化",desc:"金幣上限 ×2",icon:"🏦",levels:[{cost:{gold:80,parts:10}},{cost:{gold:250,parts:40}},{cost:{gold:600,parts:100}}]},
-  {id:"scout",name:"斥候小屋",desc:"探索速度 +25%",icon:"🗺️",levels:[{cost:{gold:300,mana:40}},{cost:{gold:700,mana:100,parts:30}},{cost:{gold:1400,mana:200,parts:80}}]},
+  {id:"tavern",  name:"酒館擴建",   desc:"冒險者上限 +2",                 icon:"🍺", levels:[{cost:{gold:100}},{cost:{gold:300,mana:50}},{cost:{gold:600,mana:120,parts:30}}]},
+  {id:"forge",   name:"鍛造工坊",   desc:"攻擊力 +20%",                   icon:"🔨", levels:[{cost:{gold:150,parts:20}},{cost:{gold:400,parts:60}},{cost:{gold:900,parts:150,mana:80}}]},
+  {id:"library", name:"魔法圖書館", desc:"魔素生產 +50%",                 icon:"📚", levels:[{cost:{gold:200,mana:30}},{cost:{gold:500,mana:100}},{cost:{gold:1000,mana:200,parts:50}}]},
+  {id:"scout",   name:"斥候小屋",   desc:"探索速度 +25%",                 icon:"🗺️", levels:[{cost:{gold:300,mana:40}},{cost:{gold:700,mana:100,parts:30}},{cost:{gold:1400,mana:200,parts:80}}]},
+  {id:"clinic",  name:"醫療帳篷",   desc:"受傷恢復速度 +50%",             icon:"🏥", levels:[{cost:{gold:200,mana:30}},{cost:{gold:500,mana:80}},{cost:{gold:1000,mana:200,parts:40}}]},
+  {id:"board",   name:"名聲布告欄", desc:"解鎖更多可雇用冒險者",         icon:"📣", levels:[{cost:{gold:150,fame:10}},{cost:{gold:400,fame:30}},{cost:{gold:800,fame:60}}]},
+  {id:"alchemy", name:"煉金工坊",   desc:"解鎖資源兌換功能",             icon:"🧪", levels:[{cost:{gold:250,mana:50}},{cost:{gold:600,mana:120,parts:30}},{cost:{gold:1200,mana:250,parts:80}}]},
+  {id:"maproom", name:"地圖室",     desc:"顯示地下城裝備掉落機率",       icon:"🗺️", levels:[{cost:{gold:180,parts:25}},{cost:{gold:450,parts:70}},{cost:{gold:900,parts:150,mana:60}}]},
+  {id:"enhance", name:"裝備強化台", desc:"解鎖裝備強化（零件提升數值）", icon:"⚗️", levels:[{cost:{gold:300,parts:50}},{cost:{gold:700,parts:120,mana:50}},{cost:{gold:1400,parts:250,mana:120}}]},
+  {id:"training",name:"訓練場",     desc:"待命冒險者自動獲得經驗值",     icon:"🎯", levels:[{cost:{gold:200,mana:40}},{cost:{gold:500,mana:100,parts:20}},{cost:{gold:1000,mana:200,parts:60}}]},
 ];
 
 const ALLIANCE_PROJECTS = [
@@ -228,6 +233,22 @@ function resPretty(k){return{gold:'💰',mana:'🧪',parts:'🔩',fame:'✨'}[k]
 
 function getBonus(){
   const ap=allianceData.projects||{};
+  const wallDone=ap.wall&&ap.wall.done;
+  const shrineDone=ap.shrine&&ap.shrine.done;
+  return {
+    atkMult:      1+(S.upgrades.forge||0)*0.2,
+    manaRateMult: 1+(S.upgrades.library||0)*0.5,
+    speedMult:    (1+(S.upgrades.scout||0)*0.25)*(wallDone?1.1:1),
+    goldCap:      500000,
+    xpMult:       shrineDone?1.25:1,
+    healMult:     1+((S.upgrades.clinic||0)*0.5),
+    trainXpRate:  (S.upgrades.training||0)*0.5,
+    alchemyLv:    S.upgrades.alchemy||0,
+    enhanceLv:    S.upgrades.enhance||0,
+    mapLv:        S.upgrades.maproom||0,
+    boardLv:      S.upgrades.board||0,
+  };
+};
   return {
     atkMult:1+(S.upgrades.forge||0)*0.2,
     manaRateMult:1+(S.upgrades.library||0)*0.5,
@@ -245,9 +266,23 @@ function guildLevel(){
   return 1;
 }
 
+function isInjured(heroId){
+  if(!S.injuries||!S.injuries[heroId]) return false;
+  if(Date.now()>=S.injuries[heroId].until){delete S.injuries[heroId];return false;}
+  return true;
+}
+function applyInjury(heroId){
+  if(Math.random()>0.10) return;
+  const bonus=getBonus();
+  if(!S.injuries) S.injuries={};
+  const healTime=Math.max(30,120/bonus.healMult);
+  S.injuries[heroId]={until:Date.now()+healTime*1000};
+  const hero=(S.heroes||[]).find(function(h){return h.id===heroId;});
+  addLog('🩹 '+(hero?hero.name:'冒險者')+' 受傷了！'+Math.round(healTime)+'秒後恢復');
+}
 function idleHeroes(){
   const busy=Object.values(S.activeQuests||{}).flat();
-  return (S.heroes||[]).filter(h=>!busy.includes(h.id));
+  return (S.heroes||[]).filter(function(h){return !busy.includes(h.id)&&!isInjured(h.id);});
 }
 
 function addLog(msg){
@@ -289,6 +324,7 @@ function offlineCalc(){
     if(elapsed>=tripTime){
       const completions=Math.floor(elapsed/tripTime);
       const heroIds=qData.heroIds||(S.activeQuests[dId]||[]);
+      heroIds.forEach(function(hid){applyInjury(hid);});
       for(let i=0;i<completions;i++){
         const g=rnd(...d.loot.gold),m=d.loot.mana?rnd(...d.loot.mana):0,p=d.loot.parts?rnd(...d.loot.parts):0;
         totalGold+=g;totalMana+=m;totalParts+=p;totalFame+=d.fameReward;runs++;
@@ -359,9 +395,20 @@ function renderHeroes(){
         const eff=getHeroEffectiveStats(h);
       return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${eff.atk} · 速${eff.spd.toFixed(2)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
       }
-      const effI=getHeroEffectiveStats(h);
-      const eqList=(S.inventory||[]).filter(x=>x.equippedBy===h.id).map(x=>x.icon+x.name).join(' ');
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${effI.atk} · 速${effI.spd.toFixed(2)}</div>${eqList?`<div style="font-size:10px;color:#666;margin-top:2px">${eqList}</div>`:''}</div><span class="badge badge-idle">待命</span></div><div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div></div>`;
+      var effI=getHeroEffectiveStats(h);
+      var eqList=(S.inventory||[]).filter(function(x){return x.equippedBy===h.id;}).map(function(x){return x.icon+x.name;}).join(' ');
+      var injH=isInjured(h.id);
+      var injSec=S.injuries&&S.injuries[h.id]?Math.max(0,Math.ceil((S.injuries[h.id].until-Date.now())/1000)):0;
+      var hc='<div class="card"><div class="card-row"><div>';
+      hc+='<div class="hero-name">'+h.icon+' '+h.name+'</div>';
+      hc+='<div class="hero-sub">'+h.cls+' · Lv'+h.level+' · 攻'+effI.atk+' · 速'+effI.spd.toFixed(2)+'</div>';
+      if(eqList) hc+='<div style="font-size:10px;color:#666;margin-top:2px">'+eqList+'</div>';
+      hc+='</div>';
+      hc+=injH?'<span class="badge" style="background:#2e1a1a;color:#e05050;border:1px solid #5a2020">🩹 '+injSec+'秒</span>':'<span class="badge badge-idle">待命</span>';
+      hc+='</div>';
+      if(!injH) hc+='<div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div>';
+      hc+='</div>';
+      return hc;
     }).join('');
   }
   const gl=guildLevel();
@@ -419,6 +466,7 @@ function checkQuests(){
     const elapsed=(Date.now()-qData.startTime)/1000;
     if(elapsed>=d.time/bonus.speedMult){
       const heroIds=qData.heroIds||(S.activeQuests[dId]||[]);
+      heroIds.forEach(function(hid){applyInjury(hid);});
       const gold=rnd(...d.loot.gold);
       const mana=d.loot.mana?rnd(...d.loot.mana):0;
       const parts=d.loot.parts?rnd(...d.loot.parts):0;
@@ -494,22 +542,42 @@ function renderDungeons(){
     } else if(active){
       partyBtn=`<div style="margin-top:6px;text-align:right"><button class="btn ${isAuto?'btn-blue':''}" onclick="toggleAuto('${d.id}')">${isAuto?'🔁 自動開啟':'🔁 自動關閉'}</button></div>`;
     }
-    return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}${partyBtn}</div>`;
+    var dropPct=Math.round((0.2+DUNGEONS.indexOf(d)*0.08)*100);
+    var dropTag=getBonus().mapLv>0?'<span class="loot-tag">裝備 '+dropPct+'%</span>':'';
+    var dc='<div class="card" style="'+(locked?'opacity:0.4':'')+'"><div class="card-row"><div>';
+    dc+='<div class="hero-name">'+d.icon+' '+d.name+'</div>';
+    dc+='<div class="hero-sub">'+d.desc+' · '+timeStr+' · 需'+d.req.heroCount+'人</div></div>'+statusHtml+'</div>';
+    dc+='<div class="loot-row">'+lootStr.split(' ').map(function(s){return '<span class="loot-tag">'+s+'</span>';}).join('')+'<span class="loot-tag">✨+'+d.fameReward+'</span>'+dropTag+'</div>';
+    dc+=progHtml+partyBtn+'</div>';
+    return dc;
   }).join('');
 }
 
 function renderUpgrades(){
-  if(!S)return;
-  document.getElementById('upgrade-list').innerHTML=UPGRADES.map(u=>{
-    const cur=S.upgrades[u.id]||0;
+  if(!S) return;
+  var bonus=getBonus();
+  var html=UPGRADES.map(function(u){
+    var cur=S.upgrades[u.id]||0;
     if(cur>=u.levels.length){
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">MAX</span></div><div class="hero-sub">${u.desc}</div></div></div></div>`;
+      return '<div class="card"><div class="card-row"><div><div class="hero-name">'+u.icon+' '+u.name+' <span style="font-size:10px;color:#4caf50">MAX</span></div><div class="hero-sub">'+u.desc+'</div></div></div></div>';
     }
-    const next=u.levels[cur];
-    const costStr=Object.entries(next.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
-    const canAfford=Object.entries(next.cost).every(([k,v])=>S[k]>=v);
-    return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">Lv${cur}→${cur+1}</span></div><div class="hero-sub">${u.desc}</div><div style="font-size:11px;color:#444;margin-top:3px">費用：${costStr}</div></div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="doUpgrade('${u.id}')">升級</button></div></div>`;
+    var next=u.levels[cur];
+    var costStr=Object.entries(next.cost).map(function(e){return resPretty(e[0])+e[1];}).join(' ');
+    var canAfford=Object.entries(next.cost).every(function(e){return (S[e[0]]||0)>=e[1];});
+    return '<div class="card"><div class="card-row"><div><div class="hero-name">'+u.icon+' '+u.name+' <span style="font-size:10px;color:#555">Lv'+cur+'→'+(cur+1)+'</span></div><div class="hero-sub">'+u.desc+'</div><div style="font-size:11px;color:#444;margin-top:3px">費用：'+costStr+'</div></div><button class="btn '+(canAfford?'btn-gold':'')+'" '+(canAfford?'':'disabled')+' onclick="doUpgrade(''+u.id+'')">升級</button></div></div>';
   }).join('');
+  if(bonus.alchemyLv>0){
+    var mult=(1+bonus.alchemyLv*0.2).toFixed(1);
+    html+='<div class="section-title" style="margin-top:14px">🧪 煉金工坊（效率 x'+mult+'）</div>';
+    html+='<div class="card"><div style="font-size:12px;color:#666;margin-bottom:8px">每次兌換 100 單位：</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+    html+='<button class="btn btn-blue" onclick="alchemyConvert('mana','gold',100)">🧪100→💰</button>';
+    html+='<button class="btn btn-blue" onclick="alchemyConvert('parts','gold',100)">⚙️100→💰</button>';
+    html+='<button class="btn btn-blue" onclick="alchemyConvert('gold','mana',100)">💰100→🧪</button>';
+    html+='<button class="btn btn-blue" onclick="alchemyConvert('gold','parts',100)">💰100→⚙️</button>';
+    html+='<button class="btn btn-blue" onclick="alchemyConvert('mana','parts',100)">🧪100→⚙️</button>';
+    html+='</div></div>';
+  }
+  document.getElementById('upgrade-list').innerHTML=html;
 }
 
 window.doUpgrade=function(id){
@@ -729,7 +797,19 @@ function renderInventory(){
     const equippedHero=eq.equippedBy?heroes.find(h=>h.id===eq.equippedBy):null;
     const statLabel={atk:'攻擊+',spd:'速度+',xp:'經驗+'}[eq.stat]||'';
     const heroOpts=`<option value="">-- 取下裝備 --</option>`+heroes.map(h=>`<option value="${h.id}" ${eq.equippedBy===h.id?'selected':''}>${h.icon}${h.name}</option>`).join('');
-    return `<div class="eq-card"><div class="card-row"><div><div class="eq-name" style="color:${qCol}">${eq.icon} ${eq.name} <span style="font-size:10px">[${eq.qualityName}]</span></div><div class="eq-stat">${statLabel}${eq.val} · ${eq.slot==='weapon'?'武器':eq.slot==='armor'?'護甲':'飾品'}</div>${equippedHero?`<div class="eq-equipped">裝備於：${equippedHero.icon}${equippedHero.name}</div>`:''}</div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><select style="background:#111;color:#aaa;border:1px solid #333;border-radius:5px;padding:3px 6px;font-size:11px" onchange="equipItem('${eq.id}',this.value)">${heroOpts}</select><button class="btn" style="font-size:10px;padding:3px 8px" onclick="discardItem('${eq.id}')">丟棄</button></div></div></div>`;
+    var enhLv=eq.enhanceLevel||0;
+    var enhCost=Math.floor(30*Math.pow(1.5,enhLv));
+    var enhBtn=getBonus().enhanceLv>0?'<button class="btn btn-blue" style="font-size:10px;padding:3px 8px" onclick="enhanceItem(''+eq.id+'')">強化(⚙️'+enhCost+')</button>':'';
+    var slotName=eq.slot==='weapon'?'武器':eq.slot==='armor'?'護甲':'飾品';
+    var eqLine=equippedHero?'<div class="eq-equipped">裝備於：'+equippedHero.icon+equippedHero.name+'</div>':'';
+    var out='<div class="eq-card"><div class="card-row"><div>';
+    out+='<div class="eq-name" style="color:'+qCol+'">'+eq.icon+' '+eq.name+' <span style="font-size:10px">['+eq.qualityName+']'+(enhLv>0?' +'+enhLv:'')+'</span></div>';
+    out+='<div class="eq-stat">'+statLabel+eq.val+' · '+slotName+'</div>'+eqLine+'</div>';
+    out+='<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">';
+    out+='<select style="background:#111;color:#aaa;border:1px solid #333;border-radius:5px;padding:3px 6px;font-size:11px" onchange="equipItem(''+eq.id+'',this.value)">'+heroOpts+'</select>';
+    out+=enhBtn+'<button class="btn" style="font-size:10px;padding:3px 8px" onclick="discardItem(''+eq.id+'')">丟棄</button>';
+    out+='</div></div></div>';
+    return out;
   }).join('');
 }
 
@@ -762,6 +842,29 @@ window.discardItem=function(eqId){
 };
 
 
+window.alchemyConvert=function(from,to,amount){
+  var bonus=getBonus();
+  if(!bonus.alchemyLv){alert('需要先升級煉金工坊');return;}
+  var rates={mana_gold:{fromKey:'mana',toKey:'gold',ratio:2},parts_gold:{fromKey:'parts',toKey:'gold',ratio:3},gold_mana:{fromKey:'gold',toKey:'mana',ratio:0.4},gold_parts:{fromKey:'gold',toKey:'parts',ratio:0.3},mana_parts:{fromKey:'mana',toKey:'parts',ratio:0.8}};
+  var r=rates[from+'_'+to];if(!r)return;
+  var outAmt=Math.floor(amount*r.ratio*(1+bonus.alchemyLv*0.2));
+  if((S[r.fromKey]||0)<amount){alert(resPretty(r.fromKey)+'不足');return;}
+  S[r.fromKey]-=amount;S[r.toKey]=Math.min(999999,(S[r.toKey]||0)+outAmt);
+  addLog('🧪 煉金：'+resPretty(r.fromKey)+amount+' → '+resPretty(r.toKey)+outAmt);
+  saveGuild();renderUpgrades();updateResourceDisplay();
+};
+window.enhanceItem=function(eqId){
+  var bonus=getBonus();
+  if(!bonus.enhanceLv){alert('需要先升級裝備強化台');return;}
+  var eq=(S.inventory||[]).find(function(x){return x.id===eqId;});
+  if(!eq)return;
+  var cost=Math.floor(30*Math.pow(1.5,(eq.enhanceLevel||0)));
+  if((S.parts||0)<cost){alert('需要 ⚙️'+cost+' 零件');return;}
+  S.parts-=cost;eq.enhanceLevel=(eq.enhanceLevel||0)+1;
+  eq.val=parseFloat((eq.val*1.15).toFixed(2));
+  addLog('⚗️ 強化了 '+eq.icon+eq.name+' +'+eq.val);
+  saveGuild();renderInventory();
+};
 window.toggleAuto=function(dungeonId){
   if(!S.autoQuest) S.autoQuest={};
   S.autoQuest[dungeonId]=!S.autoQuest[dungeonId];
@@ -807,6 +910,8 @@ window.enterGame=async function(){
     S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult);
     S.lastTick=Date.now();
     checkQuests();
+    var b2=getBonus();
+    if(b2.trainXpRate>0){idleHeroes().forEach(function(h){h.xp+=b2.trainXpRate;if(h.xp>=h.level*50){h.xp-=h.level*50;h.level++;addLog('🎯 '+h.name+' 在訓練場升到等級'+h.level+'！');}});}
     updateResourceDisplay();
   },1000);
   setInterval(()=>{if(activeTab==='heroes')renderHeroes();},3000);
