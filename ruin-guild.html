@@ -218,7 +218,7 @@ function defaultState(name){
     name,gold:100,mana:0,parts:0,fame:0,
     heroSlots:4,heroes:[],activeQuests:{},questData:{},
     upgrades:{tavern:0,forge:0,library:0,vault:0,scout:0},
-    log:[],lastTick:Date.now(),
+    log:[],lastTick:Date.now(),autoQuest:{},
   };
 }
 
@@ -272,14 +272,52 @@ async function saveGuild(){
 
 function offlineCalc(){
   const now=Date.now();
-  const dt=Math.min((now-(S.lastTick||now))/1000,3600);
-  if(dt>2){
-    const bonus=getBonus();
-    const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
-    S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1*dt);
-    S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult*dt);
+  const dt=Math.min((now-(S.lastTick||now))/1000,28800); // max 8hr
+  if(dt<5){S.lastTick=now;return;}
+  const bonus=getBonus();
+  const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
+  S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1*dt);
+  S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult*dt);
+
+  // offline dungeon completion
+  let totalGold=0,totalMana=0,totalParts=0,totalFame=0,runs=0;
+  for(const[dId,qData] of Object.entries(S.questData||{})){
+    const d=DUNGEONS.find(x=>x.id===dId);
+    if(!d) continue;
+    const elapsed=(now-qData.startTime)/1000;
+    const tripTime=d.time/bonus.speedMult;
+    if(elapsed>=tripTime){
+      const completions=Math.floor(elapsed/tripTime);
+      const heroIds=qData.heroIds||(S.activeQuests[dId]||[]);
+      for(let i=0;i<completions;i++){
+        const g=rnd(...d.loot.gold),m=d.loot.mana?rnd(...d.loot.mana):0,p=d.loot.parts?rnd(...d.loot.parts):0;
+        totalGold+=g;totalMana+=m;totalParts+=p;totalFame+=d.fameReward;runs++;
+        for(const hid of heroIds){
+          const hero=(S.heroes||[]).find(h=>h.id===hid);
+          if(hero){
+            hero.xp+=Math.round(d.xp*bonus.xpMult);
+            if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;}
+          }
+        }
+      }
+      // check if auto-repeat
+      const remaining=elapsed-(completions*tripTime);
+      if(S.autoQuest&&S.autoQuest[dId]){
+        qData.startTime=now-(remaining*1000);
+      } else {
+        delete S.activeQuests[dId];
+        delete S.questData[dId];
+      }
+    }
   }
-  S.lastTick=Date.now();
+  if(runs>0){
+    S.gold=Math.min(bonus.goldCap,S.gold+totalGold);
+    S.mana=Math.min(9999,S.mana+totalMana);
+    S.parts=Math.min(9999,S.parts+totalParts);
+    S.fame+=totalFame;
+    addLog(`💤 離線期間完成 ${runs} 趟探索！獲得 💰${totalGold} 🧪${totalMana} 🔩${totalParts} ✨${totalFame}`);
+  }
+  S.lastTick=now;
 }
 
 function updateResourceDisplay(){
@@ -397,8 +435,14 @@ function checkQuests(){
           if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;addLog(`⬆️ ${hero.name} 升到等級 ${hero.level}！`);}
         }
       }
-      delete S.activeQuests[dId];
-      delete S.questData[dId];
+      // auto-repeat or clear
+      if(S.autoQuest&&S.autoQuest[dId]){
+        qData.startTime=Date.now();
+        S.activeQuests[dId]=heroIds;
+      } else {
+        delete S.activeQuests[dId];
+        delete S.questData[dId];
+      }
       const lootStr=[gold&&`💰${gold}`,mana&&`🧪${mana}`,parts&&`🔩${parts}`].filter(Boolean).join(' ');
       // equipment drop
       const dungeonDepth=DUNGEONS.indexOf(d);
@@ -442,10 +486,13 @@ function renderDungeons(){
     }
     const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人（空閒${idle.length}人）</span>`:'';
     let partyBtn='';
+    const isAuto=S.autoQuest&&S.autoQuest[d.id];
     if(!active&&!locked&&!notEnough){
       const topHeroes=[...idle].sort((a,b)=>getHeroEffectiveStats(b).atk-getHeroEffectiveStats(a).atk).slice(0,d.req.heroCount);
       const preview=topHeroes.map(h=>`${h.icon}${h.name}`).join('、');
-      partyBtn=`<div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><span style="font-size:11px;color:#555">自動派遣：${preview}</span><button class="btn btn-gold" onclick="sendParty('${d.id}')">出發探索</button></div>`;
+      partyBtn=`<div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><span style="font-size:11px;color:#555">自動派遣：${preview}</span><div style="display:flex;gap:5px"><button class="btn ${isAuto?'btn-blue':''}" onclick="toggleAuto('${d.id}')">${isAuto?'🔁 自動':'🔁 自動'}</button><button class="btn btn-gold" onclick="sendParty('${d.id}')">出發</button></div></div>`;
+    } else if(active){
+      partyBtn=`<div style="margin-top:6px;text-align:right"><button class="btn ${isAuto?'btn-blue':''}" onclick="toggleAuto('${d.id}')">${isAuto?'🔁 自動開啟':'🔁 自動關閉'}</button></div>`;
     }
     return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}${partyBtn}</div>`;
   }).join('');
@@ -714,6 +761,14 @@ window.discardItem=function(eqId){
   renderInventory();
 };
 
+
+window.toggleAuto=function(dungeonId){
+  if(!S.autoQuest) S.autoQuest={};
+  S.autoQuest[dungeonId]=!S.autoQuest[dungeonId];
+  addLog(S.autoQuest[dungeonId]?`🔁 開啟 ${DUNGEONS.find(d=>d.id===dungeonId)?.name} 自動探索`:`⏹️ 關閉自動探索`);
+  saveGuild();
+  renderDungeons();
+};
 window.enterGame=async function(){
   const input=document.getElementById('nickname-input').value.trim();
   if(!input){alert('請輸入公會名稱');return;}
