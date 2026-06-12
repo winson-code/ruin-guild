@@ -335,8 +335,7 @@ function checkQuests(){
     if(!d) continue;
     const elapsed=(Date.now()-qData.startTime)/1000;
     if(elapsed>=d.time/bonus.speedMult){
-      const heroId=(S.activeQuests[dId]||[])[0];
-      const hero=(S.heroes||[]).find(h=>h.id===heroId);
+      const heroIds=qData.heroIds||(S.activeQuests[dId]||[]);
       const gold=rnd(...d.loot.gold);
       const mana=d.loot.mana?rnd(...d.loot.mana):0;
       const parts=d.loot.parts?rnd(...d.loot.parts):0;
@@ -344,15 +343,19 @@ function checkQuests(){
       S.mana=Math.min(9999,S.mana+mana);
       S.parts=Math.min(9999,S.parts+parts);
       S.fame+=d.fameReward;
-      if(hero){
-        hero.xp+=Math.round(d.xp*bonus.xpMult);
-        if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;addLog(`⬆️ ${hero.name} 升到等級 ${hero.level}！`);}
+      const heroNames=[];
+      for(const hid of heroIds){
+        const hero=(S.heroes||[]).find(h=>h.id===hid);
+        if(hero){
+          heroNames.push(hero.name);
+          hero.xp+=Math.round(d.xp*bonus.xpMult);
+          if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;addLog(`⬆️ ${hero.name} 升到等級 ${hero.level}！`);}
+        }
       }
       delete S.activeQuests[dId];
       delete S.questData[dId];
       const lootStr=[gold&&`💰${gold}`,mana&&`🧪${mana}`,parts&&`🔩${parts}`].filter(Boolean).join(' ');
-      addLog(`🎉 ${hero?hero.name:'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
-      changed=true;
+      addLog(`🎉 ${heroNames.join('、')||'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
     }
   }
   if(changed){saveGuild();renderAll();}
@@ -396,9 +399,7 @@ function renderHeroes(){
         }
         return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
       }
-      const available=DUNGEONS.filter(d=>S.fame>=d.req.fame&&idleHeroes().length>=d.req.heroCount&&!(S.activeQuests||{})[d.id]);
-      const opts=available.length>0?available.map(d=>`<button class="btn" onclick="sendHero('${h.id}','${d.id}')">${d.icon}${d.name}</button>`).join(''):'<span style="font-size:11px;color:#444">無可用地下城</span>';
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-idle">待命</span></div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">${opts}</div></div>`;
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-idle">待命</span></div><div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div></div>`;
     }).join('');
   }
   const gl=guildLevel();
@@ -429,16 +430,21 @@ window.hireHero = function(id){
   saveGuild();renderAll();
 };
 
-window.sendHero = function(heroId,dungeonId){
+window.sendParty = function(dungeonId){
   if((S.activeQuests||{})[dungeonId]){alert('此地下城已有探索中');return;}
   const d=DUNGEONS.find(x=>x.id===dungeonId);
   if(!d) return;
+  const idle=idleHeroes();
+  if(idle.length<d.req.heroCount){alert(`需要 ${d.req.heroCount} 名空閒冒險者`);return;}
+  const checkboxes=document.querySelectorAll(`input.party-check-${dungeonId}:checked`);
+  const selectedIds=Array.from(checkboxes).map(c=>c.value);
+  if(selectedIds.length!==d.req.heroCount){alert(`請選擇剛好 ${d.req.heroCount} 名冒險者`);return;}
   if(!S.activeQuests) S.activeQuests={};
   if(!S.questData) S.questData={};
-  S.activeQuests[dungeonId]=[heroId];
-  S.questData[dungeonId]={startTime:Date.now(),heroId};
-  const hero=(S.heroes||[]).find(h=>h.id===heroId);
-  addLog(`🏃 ${hero?hero.name:'冒險者'} 出發前往 ${d.icon} ${d.name}`);
+  S.activeQuests[dungeonId]=selectedIds;
+  S.questData[dungeonId]={startTime:Date.now(),heroIds:selectedIds};
+  const names=selectedIds.map(id=>(S.heroes||[]).find(h=>h.id===id)?.name||'').join('、');
+  addLog(`🏃 ${names} 出發前往 ${d.icon} ${d.name}`);
   saveGuild();renderAll();
 };
 
@@ -448,7 +454,8 @@ function renderDungeons(){
   document.getElementById('dungeon-list').innerHTML=DUNGEONS.map(d=>{
     const locked=S.fame<d.req.fame;
     const active=(S.activeQuests||{})[d.id];
-    const notEnough=!locked&&idleHeroes().length<d.req.heroCount;
+    const idle=idleHeroes();
+    const notEnough=!locked&&idle.length<d.req.heroCount;
     const timeStr=Math.round(d.time/bonus.speedMult)+'秒';
     const lootStr=Object.entries(d.loot).map(([k,[a,b]])=>`${resPretty(k)}${a}-${b}`).join(' ');
     let progHtml='';
@@ -458,12 +465,18 @@ function renderDungeons(){
         const elapsed=(Date.now()-qData.startTime)/1000;
         const total=d.time/bonus.speedMult;
         const pct=Math.min(100,elapsed/total*100);
-        const heroName=(S.heroes||[]).find(h=>h.id===active[0])?.name||'隊伍';
-        progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${heroName} 探索中 — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
+        const heroIds=qData.heroIds||[qData.heroId];
+        const heroNames=heroIds.map(id=>(S.heroes||[]).find(h=>h.id===id)?.name||'').join('、');
+        progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${heroNames} 探索中 — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
       }
     }
-    const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人</span>`:'';
-    return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}</div>`;
+    const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人（目前空閒${idle.length}人）</span>`:'';
+    let partySelector='';
+    if(!active&&!locked&&!notEnough){
+      const checks=idle.map(h=>`<label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:4px"><input type="checkbox" class="party-check-${d.id}" value="${h.id}"> ${h.icon}${h.name}</label>`).join('');
+      partySelector=`<div style="margin-top:8px"><div style="font-size:11px;color:#555;margin-bottom:4px">選擇 ${d.req.heroCount} 名冒險者：</div><div style="display:flex;gap:10px;flex-wrap:wrap">${checks}</div><button class="btn btn-gold" style="margin-top:8px" onclick="sendParty('${d.id}')">出發探索</button></div>`;
+    }
+    return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}${partySelector}</div>`;
   }).join('');
 }
 
