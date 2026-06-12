@@ -71,6 +71,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .participant-row{display:flex;align-items:center;gap:8px;margin-top:4px}
 .participant-name{font-size:12px;color:#aaa}
 .divider{border:none;border-top:1px solid #1a1a1a;margin:12px 0}
+.eq-common{color:#aaa}.eq-rare{color:#5b8dee}.eq-epic{color:#c97eee}
+.eq-card{background:#1a1a2e;border:1px solid #222;border-radius:10px;padding:10px 14px;margin-bottom:6px}
+.eq-name{font-size:13px;font-weight:500}.eq-stat{font-size:11px;color:#666;margin-top:2px}
+.eq-equipped{font-size:10px;color:#4caf50;margin-top:2px}
 </style>
 </head>
 <body>
@@ -105,6 +109,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="tab active" onclick="switchTab('heroes',this)">🧙 冒險者</button>
     <button class="tab" onclick="switchTab('dungeon',this)">🏚️ 地下城</button>
     <button class="tab" onclick="switchTab('upgrade',this)">🏛️ 升級</button>
+    <button class="tab" onclick="switchTab('equipment',this)">🗡️ 裝備</button>
     <button class="tab" onclick="switchTab('alliance',this)">🤝 聯盟</button>
     <button class="tab" onclick="switchTab('log',this)">📜 戰報</button>
   </div>
@@ -122,6 +127,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="tab-upgrade" class="panel">
     <div class="section-title">公會設施</div>
     <div id="upgrade-list"></div>
+  </div>
+  <div id="tab-equipment" class="panel">
+    <div class="section-title">倉庫</div>
+    <div id="inventory-list"></div>
   </div>
   <div id="tab-alliance" class="panel">
     <div class="alliance-section">
@@ -309,9 +318,12 @@ function renderHeroes(){
           const pct=Math.min(100,elapsed/total*100);
           progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${d.icon} ${d.name} — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
         }
-        return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
+        const eff=getHeroEffectiveStats(h);
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${eff.atk} · 速${eff.spd.toFixed(2)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
       }
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-idle">待命</span></div><div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div></div>`;
+      const effI=getHeroEffectiveStats(h);
+      const eqList=(S.inventory||[]).filter(x=>x.equippedBy===h.id).map(x=>x.icon+x.name).join(' ');
+      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${effI.atk} · 速${effI.spd.toFixed(2)}</div>${eqList?`<div style="font-size:10px;color:#666;margin-top:2px">${eqList}</div>`:''}</div><span class="badge badge-idle">待命</span></div><div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div></div>`;
     }).join('');
   }
   const gl=guildLevel();
@@ -348,7 +360,7 @@ window.sendParty=function(dungeonId){
   if(!d)return;
   const idle=idleHeroes();
   if(idle.length<d.req.heroCount){alert(`需要 ${d.req.heroCount} 名空閒冒險者`);return;}
-  const sorted=[...idle].sort((a,b)=>b.atk*getBonus().atkMult-a.atk*getBonus().atkMult);
+  const sorted=[...idle].sort((a,b)=>getHeroEffectiveStats(b).atk-getHeroEffectiveStats(a).atk);
   const selectedIds=sorted.slice(0,d.req.heroCount).map(h=>h.id);
   if(!S.activeQuests)S.activeQuests={};
   if(!S.questData)S.questData={};
@@ -388,7 +400,18 @@ function checkQuests(){
       delete S.activeQuests[dId];
       delete S.questData[dId];
       const lootStr=[gold&&`💰${gold}`,mana&&`🧪${mana}`,parts&&`🔩${parts}`].filter(Boolean).join(' ');
-      addLog(`🎉 ${heroNames.join('、')||'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
+      // equipment drop
+      const dungeonDepth=DUNGEONS.indexOf(d);
+      const dropped=rollEquipment(dungeonDepth);
+      if(dropped){
+        if(!S.inventory) S.inventory=[];
+        S.inventory.push(dropped);
+        const qCol=EQ_QUALITY.find(q=>q.id===dropped.quality)?.color||'#aaa';
+        addLog(`🎉 ${heroNames.join('、')||'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
+        addLog(`✨ 掉落裝備：${dropped.icon}${dropped.name} [${dropped.qualityName}]`);
+      } else {
+        addLog(`🎉 ${heroNames.join('、')||'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
+      }
       changed=true;
     }
   }
@@ -420,7 +443,7 @@ function renderDungeons(){
     const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人（空閒${idle.length}人）</span>`:'';
     let partyBtn='';
     if(!active&&!locked&&!notEnough){
-      const topHeroes=[...idle].sort((a,b)=>b.atk-a.atk).slice(0,d.req.heroCount);
+      const topHeroes=[...idle].sort((a,b)=>getHeroEffectiveStats(b).atk-getHeroEffectiveStats(a).atk).slice(0,d.req.heroCount);
       const preview=topHeroes.map(h=>`${h.icon}${h.name}`).join('、');
       partyBtn=`<div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><span style="font-size:11px;color:#555">自動派遣：${preview}</span><button class="btn btn-gold" onclick="sendParty('${d.id}')">出發探索</button></div>`;
     }
@@ -572,6 +595,7 @@ function renderAll(forceDungeon){
   if(activeTab==='heroes')renderHeroes();
   else if(activeTab==='dungeon'&&forceDungeon)renderDungeons();
   else if(activeTab==='upgrade')renderUpgrades();
+  else if(activeTab==='equipment')renderInventory();
   else if(activeTab==='alliance')renderAlliance();
   else if(activeTab==='log')renderLog();
 }
@@ -583,7 +607,111 @@ window.switchTab=function(name,el){
   el.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='dungeon')renderDungeons();
+  else if(name==='equipment')renderInventory();
   else renderAll(false);
+};
+
+
+// ── Equipment system ──
+const EQ_TYPES = [
+  {id:'sword',name:'鐵劍',slot:'weapon',icon:'⚔️',stat:'atk',desc:'提升攻擊力'},
+  {id:'axe',name:'戰斧',slot:'weapon',icon:'🪓',stat:'atk',desc:'提升攻擊力'},
+  {id:'staff',name:'法杖',slot:'weapon',icon:'🪄',stat:'atk',desc:'提升攻擊力'},
+  {id:'armor',name:'護甲',slot:'armor',icon:'🛡️',stat:'spd',desc:'提升探索速度'},
+  {id:'boots',name:'疾風靴',slot:'armor',icon:'👢',stat:'spd',desc:'提升探索速度'},
+  {id:'ring',name:'經驗戒指',slot:'accessory',icon:'💍',stat:'xp',desc:'提升經驗獲取'},
+  {id:'amulet',name:'古老護符',slot:'accessory',icon:'🔮',stat:'xp',desc:'提升經驗獲取'},
+];
+const EQ_QUALITY = [
+  {id:'common',name:'普通',color:'#aaa',mult:1.0,dropRate:0.5},
+  {id:'rare',name:'稀有',color:'#5b8dee',mult:1.8,dropRate:0.3},
+  {id:'epic',name:'史詩',color:'#c97eee',mult:3.0,dropRate:0.12},
+];
+const EQ_BASE_VALS = {atk:[2,5],spd:[0.05,0.15],xp:[0.15,0.35]};
+
+function rollEquipment(dungeonDepth){
+  const r=Math.random();
+  // drop chance increases with dungeon depth
+  const dropChance=0.2+dungeonDepth*0.08;
+  if(Math.random()>dropChance) return null;
+  // pick quality
+  let qual=EQ_QUALITY[0];
+  const qr=Math.random();
+  if(qr<EQ_QUALITY[2].dropRate) qual=EQ_QUALITY[2];
+  else if(qr<EQ_QUALITY[2].dropRate+EQ_QUALITY[1].dropRate) qual=EQ_QUALITY[1];
+  // pick type
+  const type=EQ_TYPES[Math.floor(Math.random()*EQ_TYPES.length)];
+  const base=EQ_BASE_VALS[type.stat];
+  const val=parseFloat(((base[0]+Math.random()*(base[1]-base[0]))*qual.mult).toFixed(2));
+  return {
+    id: Date.now()+'_'+Math.floor(Math.random()*9999),
+    typeId:type.id, name:type.name, icon:type.icon,
+    slot:type.slot, stat:type.stat, val,
+    quality:qual.id, qualityName:qual.name,
+    equippedBy:null
+  };
+}
+
+function getHeroEffectiveStats(hero){
+  const bonus=getBonus();
+  let atkBonus=0, spdBonus=0, xpBonus=0;
+  const inv=S.inventory||[];
+  inv.filter(eq=>eq.equippedBy===hero.id).forEach(eq=>{
+    if(eq.stat==='atk') atkBonus+=eq.val;
+    if(eq.stat==='spd') spdBonus+=eq.val;
+    if(eq.stat==='xp')  xpBonus+=eq.val;
+  });
+  return {
+    atk: Math.round((hero.atk+atkBonus)*bonus.atkMult),
+    spd: parseFloat((hero.spd+spdBonus).toFixed(2)),
+    xpMult: bonus.xpMult+xpBonus,
+  };
+}
+
+function renderInventory(){
+  if(!S) return;
+  const inv=S.inventory||[];
+  const el=document.getElementById('inventory-list');
+  if(inv.length===0){
+    el.innerHTML='<div class="empty">倉庫是空的，去探索地下城獲得裝備吧！</div>';
+    return;
+  }
+  const heroes=S.heroes||[];
+  el.innerHTML=inv.map(eq=>{
+    const qCol=EQ_QUALITY.find(q=>q.id===eq.quality)?.color||'#aaa';
+    const equippedHero=eq.equippedBy?heroes.find(h=>h.id===eq.equippedBy):null;
+    const statLabel={atk:'攻擊+',spd:'速度+',xp:'經驗+'}[eq.stat]||'';
+    const heroOpts=`<option value="">-- 取下裝備 --</option>`+heroes.map(h=>`<option value="${h.id}" ${eq.equippedBy===h.id?'selected':''}>${h.icon}${h.name}</option>`).join('');
+    return `<div class="eq-card"><div class="card-row"><div><div class="eq-name" style="color:${qCol}">${eq.icon} ${eq.name} <span style="font-size:10px">[${eq.qualityName}]</span></div><div class="eq-stat">${statLabel}${eq.val} · ${eq.slot==='weapon'?'武器':eq.slot==='armor'?'護甲':'飾品'}</div>${equippedHero?`<div class="eq-equipped">裝備於：${equippedHero.icon}${equippedHero.name}</div>`:''}</div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end"><select style="background:#111;color:#aaa;border:1px solid #333;border-radius:5px;padding:3px 6px;font-size:11px" onchange="equipItem('${eq.id}',this.value)">${heroOpts}</select><button class="btn" style="font-size:10px;padding:3px 8px" onclick="discardItem('${eq.id}')">丟棄</button></div></div></div>`;
+  }).join('');
+}
+
+window.equipItem=function(eqId,heroId){
+  if(!S.inventory) return;
+  const eq=S.inventory.find(x=>x.id===eqId);
+  if(!eq) return;
+  const slot=eq.slot;
+  // unequip same slot from target hero
+  if(heroId){
+    S.inventory.forEach(x=>{
+      if(x.equippedBy===heroId&&x.slot===slot&&x.id!==eqId) x.equippedBy=null;
+    });
+    eq.equippedBy=heroId;
+    const hero=(S.heroes||[]).find(h=>h.id===heroId);
+    addLog(`🗡️ ${hero?hero.name:'冒險者'} 裝備了 ${eq.icon}${eq.name}`);
+  } else {
+    eq.equippedBy=null;
+  }
+  saveGuild();
+  renderInventory();
+  if(activeTab==='heroes') renderHeroes();
+};
+
+window.discardItem=function(eqId){
+  if(!S.inventory) return;
+  S.inventory=S.inventory.filter(x=>x.id!==eqId);
+  saveGuild();
+  renderInventory();
 };
 
 window.enterGame=async function(){
