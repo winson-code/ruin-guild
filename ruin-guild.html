@@ -2,156 +2,155 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>廢墟公會聯盟</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>廢墟公會</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh}
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
-#login-screen h1{font-size:28px;font-weight:600;color:#c9a84c;letter-spacing:0.05em}
-#login-screen p{font-size:14px;color:#888;margin-top:-8px}
-#login-screen input{padding:10px 16px;font-size:15px;border-radius:8px;border:1px solid #333;background:#1a1a2e;color:#e0e0e0;width:240px;text-align:center}
-#login-screen button{padding:10px 32px;font-size:15px;border-radius:8px;border:none;background:#c9a84c;color:#0f0f1a;font-weight:600;cursor:pointer}
-#login-screen button:hover{background:#e0bc5e}
-#game{display:none;max-width:760px;margin:0 auto;padding:12px}
-.top-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #222}
-.guild-title{font-size:18px;font-weight:600;color:#c9a84c}
-.guild-sub{font-size:12px;color:#666;margin-top:2px}
-.player-badge{font-size:12px;background:#1a1a2e;border:1px solid #333;padding:4px 10px;border-radius:99px;color:#aaa}
-.res-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.res-card{background:#1a1a2e;border:1px solid #222;border-radius:8px;padding:8px 10px;text-align:center}
-.res-label{font-size:10px;color:#666;margin-bottom:2px}
-.res-val{font-size:15px;font-weight:600;color:#e0e0e0}
-.res-rate{font-size:10px;color:#555;margin-top:1px}
-.tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid #222;border-radius:8px;overflow:hidden}
-.tab{flex:1;padding:8px;font-size:13px;background:transparent;border:none;cursor:pointer;color:#666;transition:background 0.15s}
-.tab.active{background:#1a1a2e;color:#c9a84c;font-weight:500}
-.panel{display:none}.panel.active{display:block}
-.section-title{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
-.card{background:#1a1a2e;border:1px solid #222;border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.card-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.hero-name{font-size:14px;font-weight:500;color:#e0e0e0}
-.hero-sub{font-size:12px;color:#666;margin-top:2px}
-.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:500}
-.badge-idle{background:#1a2e1a;color:#4caf50;border:1px solid #2d4a2d}
-.badge-quest{background:#1a2040;color:#5b8dee;border:1px solid #2d3a60}
-.btn{padding:5px 12px;font-size:12px;border:1px solid #333;border-radius:6px;background:transparent;cursor:pointer;color:#aaa;white-space:nowrap;transition:all 0.15s}
-.btn:hover{background:#252535;color:#e0e0e0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a0f;color:#d4c9a0;min-height:100vh;overflow-x:hidden}
+
+/* Login */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;background:radial-gradient(ellipse at center,#2a2a15 0%,#1a1a0f 70%)}
+#login h1{font-size:32px;font-weight:700;color:#c9a84c;letter-spacing:0.1em;text-shadow:0 0 20px #c9a84c44}
+#login p{font-size:13px;color:#666;margin-top:-8px}
+#login input{padding:10px 16px;font-size:15px;border-radius:8px;border:1px solid #444;background:#2a2a15;color:#d4c9a0;width:240px;text-align:center;outline:none}
+#login input:focus{border-color:#c9a84c}
+#login button{padding:10px 32px;font-size:15px;border-radius:8px;border:none;background:#c9a84c;color:#1a1a0f;font-weight:700;cursor:pointer;letter-spacing:0.05em}
+#login button:hover{background:#e0bc5e}
+#login .hint{font-size:11px;color:#555;text-align:center;max-width:260px;line-height:1.6}
+
+/* Main layout */
+#app{display:none;height:100vh;display:none;flex-direction:column}
+#topbar{background:#111108;border-bottom:1px solid #333;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+#topbar .guild{font-size:14px;font-weight:700;color:#c9a84c}
+#topbar .res-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.res{font-size:12px;color:#d4c9a0;display:flex;align-items:center;gap:3px}
+.res span{font-size:11px;color:#666}
+#sync{font-size:10px;color:#444}
+
+#main{display:flex;flex:1;overflow:hidden}
+
+/* Map */
+#map-panel{flex:1;overflow:auto;padding:10px;background:#1a1a0f;position:relative}
+#map-wrap{display:inline-block}
+#map-grid{display:grid;gap:2px;width:max-content}
+.tile{width:52px;height:52px;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;position:relative;border:1px solid transparent;transition:transform 0.1s,border-color 0.1s;flex-shrink:0;user-select:none}
+.tile:hover{transform:scale(1.08);z-index:2}
+.tile.fog{background:#111108;border-color:#1f1f10;cursor:default;font-size:14px;color:#333}
+.tile.fog:hover{transform:none}
+.tile.locked{background:#1c1c0e;border-color:#2a2a18;cursor:pointer}
+.tile.locked:hover{border-color:#c9a84c88}
+.tile.clearing{background:#252510;border-color:#c9a84c44;animation:pulse 1.5s infinite}
+.tile.road{background:#2a2a1a;border-color:#4a4a2a}
+.tile.empty{background:#1e2010;border-color:#2a2e14}
+.tile.settlement{background:#1a2a1a;border-color:#3a5a2a}
+.tile.capital{background:#1a2a1a;border-color:#c9a84c;box-shadow:0 0 8px #c9a84c44}
+.tile.farm{background:#1e2a12;border-color:#4a6a20}
+.tile.mine{background:#2a1e12;border-color:#6a4a20}
+.tile.forest{background:#162210;border-color:#2a4a18}
+.tile.lake{background:#101e2a;border-color:#1a3a5a}
+.tile.ruin{background:#2a1a1a;border-color:#5a2a2a}
+.tile.connected{box-shadow:inset 0 0 0 2px #c9a84c33}
+.tile .lv{position:absolute;bottom:1px;right:3px;font-size:9px;color:#888;font-weight:600}
+.tile .prog{position:absolute;bottom:0;left:0;height:3px;background:#c9a84c;border-radius:0 0 4px 4px;transition:width 0.5s}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* Side panel */
+#side{width:240px;background:#111108;border-left:1px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#side-tabs{display:flex;border-bottom:1px solid #222;flex-shrink:0}
+.stab{flex:1;padding:8px 4px;font-size:11px;background:transparent;border:none;cursor:pointer;color:#555;transition:all 0.15s;text-align:center}
+.stab.active{color:#c9a84c;border-bottom:2px solid #c9a84c}
+.stab:hover{color:#d4c9a0}
+#side-content{flex:1;overflow-y:auto;padding:10px}
+
+.s-title{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin:10px 0 6px}
+.s-title:first-child{margin-top:0}
+.info-card{background:#1a1a0e;border:1px solid #2a2a18;border-radius:6px;padding:8px 10px;margin-bottom:6px}
+.info-name{font-size:13px;font-weight:600;color:#d4c9a0}
+.info-sub{font-size:11px;color:#666;margin-top:2px;line-height:1.5}
+.info-cost{font-size:11px;color:#888;margin-top:4px}
+.btn{padding:5px 10px;font-size:11px;border:1px solid #444;border-radius:5px;background:transparent;cursor:pointer;color:#aaa;transition:all 0.15s;width:100%;margin-top:6px}
+.btn:hover{background:#2a2a18;color:#d4c9a0}
 .btn:disabled{opacity:0.3;cursor:not-allowed}
-.btn-gold{background:#2a2010;color:#c9a84c;border-color:#4a3a10}
-.btn-gold:hover{background:#3a3015}
-.btn-blue{background:#1a2040;color:#5b8dee;border-color:#2d3a60}
-.btn-blue:hover{background:#222d50}
-.progress-bar{height:4px;background:#222;border-radius:2px;overflow:hidden;margin-top:6px}
-.progress-fill{height:100%;background:#5b8dee;border-radius:2px;transition:width 0.5s linear}
-.progress-label{font-size:10px;color:#555;margin-top:3px}
-.loot-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.loot-tag{font-size:10px;padding:2px 6px;background:#111;border-radius:4px;color:#666;border:1px solid #222}
-.sync-bar{font-size:10px;color:#444;text-align:right;margin-bottom:6px}
-.log-box{background:#111;border-radius:8px;padding:8px 10px;max-height:200px;overflow-y:auto}
-.log-entry{font-size:12px;color:#666;line-height:1.8;border-bottom:1px solid #1a1a1a;padding:1px 0}
-.log-entry:last-child{border-bottom:none}
-.log-time{font-size:10px;color:#444;margin-right:6px}
-.empty{font-size:13px;color:#444;text-align:center;padding:24px}
-.alliance-section{margin-bottom:16px}
-.player-guild-card{background:#111;border:1px solid #222;border-radius:10px;padding:10px 14px;margin-bottom:6px}
-.pgc-header{display:flex;align-items:center;justify-content:space-between}
-.pgc-name{font-size:13px;font-weight:500;color:#c9a84c}
-.pgc-stats{font-size:11px;color:#555;margin-top:3px}
-.alliance-project{background:#1a1a2e;border:1px solid #2d3050;border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.ap-name{font-size:14px;font-weight:500;color:#5b8dee}
-.ap-desc{font-size:12px;color:#555;margin-top:2px}
-.ap-progress{margin-top:8px}
-.ap-bar{height:6px;background:#111;border-radius:3px;overflow:hidden;margin-top:4px}
-.ap-fill{height:100%;background:linear-gradient(90deg,#2d3a60,#5b8dee);border-radius:3px;transition:width 0.5s}
-.ap-label{font-size:11px;color:#555;margin-top:3px;display:flex;justify-content:space-between}
-.contrib-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.divider{border:none;border-top:1px solid #1a1a1a;margin:12px 0}
-.expedition-card{background:#1a1a2e;border:1px solid #2d3050;border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.exp-name{font-size:14px;font-weight:500;color:#e0b060}
-.exp-desc{font-size:12px;color:#555;margin-top:2px}
-.exp-req{font-size:11px;color:#444;margin-top:4px}
-.participants{margin-top:8px}
-.participant-row{display:flex;align-items:center;gap:8px;margin-top:4px}
-.participant-name{font-size:12px;color:#aaa}
-.participant-hero{font-size:11px;color:#555}
+.btn-gold{background:#2a2010;color:#c9a84c;border-color:#5a4a20}
+.btn-gold:hover:not(:disabled){background:#3a3015;color:#e0bc5e}
+.btn-green{background:#102010;color:#6aaa40;border-color:#2a5a18}
+.btn-green:hover:not(:disabled){background:#183018}
+
+.player-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #1a1a10}
+.player-row:last-child{border-bottom:none}
+.player-name{font-size:12px;color:#d4c9a0}
+.player-stats{font-size:10px;color:#555}
+
+.log-entry{font-size:11px;color:#666;line-height:1.8;border-bottom:1px solid #1a1a10;padding:2px 0}
+.log-time{font-size:10px;color:#444;margin-right:4px}
+
+.prog-bar{height:4px;background:#1a1a10;border-radius:2px;margin-top:4px;overflow:hidden}
+.prog-fill{height:100%;background:#c9a84c;border-radius:2px;transition:width 0.5s}
+
+/* Tile info popup */
+#tile-info{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#111108;border:1px solid #444;border-radius:10px;padding:12px 16px;z-index:100;min-width:220px;max-width:300px;display:none;box-shadow:0 4px 20px #00000088}
+#tile-info h3{font-size:14px;color:#c9a84c;margin-bottom:4px}
+#tile-info p{font-size:12px;color:#888;line-height:1.5}
+#tile-info .actions{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+#tile-info-close{position:absolute;top:6px;right:8px;background:none;border:none;color:#555;cursor:pointer;font-size:16px}
+
+.empty-msg{font-size:12px;color:#444;text-align:center;padding:20px 10px;line-height:1.6}
+
+/* Mobile */
+@media(max-width:600px){
+  #side{width:100%;height:220px;border-left:none;border-top:1px solid #222;flex-shrink:0}
+  #main{flex-direction:column}
+  .tile{width:44px;height:44px;font-size:17px}
+}
 </style>
 </head>
 <body>
 
-<div id="login-screen">
-  <h1>⚔️ 廢墟公會聯盟</h1>
-  <p>輸入你的公會名稱來開始遊戲</p>
-  <input type="text" id="nickname-input" placeholder="公會名稱（例如：星辰公會）" maxlength="12">
-  <button onclick="enterGame()">進入遊戲</button>
+<div id="login">
+  <h1>☢️ 廢墟公會</h1>
+  <p>核戰後的廢土重建計畫</p>
+  <input type="text" id="nick-input" placeholder="輸入你的名字" maxlength="10">
+  <button onclick="enterGame()">進入廢土</button>
+  <div class="hint">所有玩家共享同一張地圖<br>輸入相同名字可繼續上次進度</div>
 </div>
 
-<div id="game">
-  <div class="top-header">
-    <div>
-      <div class="guild-title" id="my-guild-title">⚔️ 我的公會</div>
-      <div class="guild-sub">等級 <span id="guild-level">1</span> · 聲望 <span id="guild-fame-top">0</span></div>
+<div id="app">
+  <div id="topbar">
+    <div class="guild">☢️ 廢墟公會 <span style="font-size:11px;color:#666" id="city-lv"></span></div>
+    <div class="res-row">
+      <div class="res">💰<b id="r-gold">0</b><span id="rr-gold"></span></div>
+      <div class="res">🌾<b id="r-food">0</b><span id="rr-food"></span></div>
+      <div class="res">⚙️<b id="r-parts">0</b><span id="rr-parts"></span></div>
+      <div class="res">⚡<b id="r-power">0</b></div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="sync-bar" id="sync-bar">同步中...</div>
-      <div class="player-badge" id="player-badge">玩家</div>
-    </div>
+    <div id="sync">●</div>
   </div>
 
-  <div class="res-bar">
-    <div class="res-card"><div class="res-label">💰 金幣</div><div class="res-val" id="res-gold">0</div><div class="res-rate" id="rate-gold"></div></div>
-    <div class="res-card"><div class="res-label">🧪 魔素</div><div class="res-val" id="res-mana">0</div><div class="res-rate" id="rate-mana"></div></div>
-    <div class="res-card"><div class="res-label">🔩 零件</div><div class="res-val" id="res-parts">0</div></div>
-    <div class="res-card"><div class="res-label">✨ 聲望</div><div class="res-val" id="res-fame">0</div></div>
+  <div id="main">
+    <div id="map-panel">
+      <div id="map-wrap"><div id="map-grid"></div></div>
+    </div>
+    <div id="side">
+      <div id="side-tabs">
+        <button class="stab active" onclick="showSideTab('build',this)">🏗️建造</button>
+        <button class="stab" onclick="showSideTab('players',this)">👥玩家</button>
+        <button class="stab" onclick="showSideTab('log',this)">📜戰報</button>
+      </div>
+      <div id="side-content"></div>
+    </div>
   </div>
+</div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('heroes',this)">🧙 冒險者</button>
-    <button class="tab" onclick="switchTab('dungeon',this)">🏚️ 地下城</button>
-    <button class="tab" onclick="switchTab('upgrade',this)">🏛️ 升級</button>
-    <button class="tab" onclick="switchTab('alliance',this)">🤝 聯盟</button>
-    <button class="tab" onclick="switchTab('log',this)">📜 戰報</button>
-  </div>
-
-  <div id="tab-heroes" class="panel active">
-    <div class="section-title">目前冒險者</div>
-    <div id="hero-list"></div>
-    <div class="section-title" style="margin-top:12px">雇用新冒險者</div>
-    <div id="hire-list"></div>
-  </div>
-  <div id="tab-dungeon" class="panel">
-    <div class="section-title">可探索地下城</div>
-    <div id="dungeon-list"></div>
-  </div>
-  <div id="tab-upgrade" class="panel">
-    <div class="section-title">公會設施</div>
-    <div id="upgrade-list"></div>
-  </div>
-  <div id="tab-alliance" class="panel">
-    <div class="alliance-section">
-      <div class="section-title">聯盟共同建造</div>
-      <div id="alliance-projects"></div>
-    </div>
-    <hr class="divider">
-    <div class="alliance-section">
-      <div class="section-title">聯合遠征</div>
-      <div id="expeditions"></div>
-    </div>
-    <hr class="divider">
-    <div class="alliance-section">
-      <div class="section-title">其他公會</div>
-      <div id="other-guilds"></div>
-    </div>
-  </div>
-  <div id="tab-log" class="panel">
-    <div class="section-title">最近戰報</div>
-    <div class="log-box" id="log-box"></div>
-  </div>
+<div id="tile-info">
+  <button id="tile-info-close" onclick="closeTileInfo()">✕</button>
+  <h3 id="ti-title"></h3>
+  <p id="ti-desc"></p>
+  <div class="actions" id="ti-actions"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuyxUGnWK6fwQ_1-p1GJIyQC7uqAUKtww",
@@ -166,502 +165,620 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const HERO_TEMPLATES = [
-  {id:"fighter",name:"鐵拳 葛雷",cls:"戰士",icon:"⚔️",atk:8,spd:1.0,cost:{gold:50},flavor:"老傷滿身，打架第一",unlock:0},
-  {id:"mage",name:"星塵 米蘭",cls:"法師",icon:"🔮",atk:5,spd:0.8,cost:{gold:80,mana:20},flavor:"魔力過剩，偶爾走火",unlock:0},
-  {id:"rogue",name:"暗影 柯爾",cls:"盜賊",icon:"🗡️",atk:6,spd:1.4,cost:{gold:100,mana:10},flavor:"安靜，出手快",unlock:1},
-  {id:"healer",name:"聖光 艾娜",cls:"聖職者",icon:"💊",atk:3,spd:0.7,cost:{gold:120,mana:40},flavor:"補血永遠慢半拍",unlock:1},
-  {id:"archer",name:"狂風 艾絲",cls:"弓箭手",icon:"🏹",atk:7,spd:1.2,cost:{gold:150,mana:30},flavor:"從不喊累",unlock:2},
-  {id:"tank",name:"鐵壁 巴爾",cls:"聖騎士",icon:"🛡️",atk:4,spd:0.6,cost:{gold:200,mana:60,parts:20},flavor:"他的盾幾乎擋住一切",unlock:2},
+// ── Map definition ──
+const COLS = 12, ROWS = 10;
+const CAPITAL_IDX = Math.floor(ROWS/2)*COLS + Math.floor(COLS/2); // center
+
+// Tile types
+const T = {
+  FOG:'fog', LOCKED:'locked', EMPTY:'empty', ROAD:'road',
+  CAPITAL:'capital', SETTLEMENT:'settlement',
+  FARM:'farm', MINE:'mine', FOREST:'forest', LAKE:'lake', RUIN:'ruin'
+};
+
+// Buildings you can place on empty tiles
+const BUILDINGS = [
+  {id:'road',   name:'道路',     icon:'🛤️', desc:'連接聚落，讓資源流通。沒有道路連回主基地的建築無法生產。', cost:{gold:20},        produces:{},          type:'road'},
+  {id:'farm',   name:'農場',     icon:'🌾', desc:'生產食物，每級每秒 +0.5 食物。', cost:{gold:60,parts:10}, produces:{food:0.5},  type:'farm'},
+  {id:'mine',   name:'礦場',     icon:'⚙️', desc:'生產零件，每級每秒 +0.3 零件。', cost:{gold:80,parts:5},  produces:{parts:0.3}, type:'mine'},
+  {id:'settlement',name:'聚落', icon:'🏘️', desc:'增加金幣收入，每級每秒 +1 金幣。需要道路連接主基地才有效。', cost:{gold:100,food:20},produces:{gold:1},    type:'settlement'},
+  {id:'power',  name:'發電機',   icon:'⚡', desc:'提供電力。部分升級需要電力。每座提供 +3 電力。', cost:{gold:150,parts:30},produces:{power:3},   type:'power'},
 ];
 
-const DUNGEONS = [
-  {id:"cave",name:"幽暗洞窟",icon:"🦇",desc:"入門地下城",req:{heroCount:1,fame:0},time:15,loot:{gold:[5,15],mana:[0,5]},xp:10,fameReward:2},
-  {id:"crypt",name:"古老地穴",icon:"💀",desc:"骷髏橫行的腐蝕地穴",req:{heroCount:2,fame:10},time:25,loot:{gold:[12,25],mana:[5,15],parts:[0,8]},xp:20,fameReward:5},
-  {id:"dungeon",name:"廢棄礦坑",icon:"⛏️",desc:"深入地下，礦物豐富",req:{heroCount:2,fame:30},time:40,loot:{gold:[20,40],mana:[8,20],parts:[5,15]},xp:35,fameReward:8},
-  {id:"tower",name:"魔法師之塔",icon:"🗼",desc:"扭曲空間，魔法陷阱",req:{heroCount:3,fame:60},time:60,loot:{gold:[30,60],mana:[20,50],parts:[5,20]},xp:60,fameReward:15},
-  {id:"abyss",name:"深淵裂縫",icon:"🌑",desc:"古代惡魔沉睡之地",req:{heroCount:4,fame:120},time:90,loot:{gold:[60,120],mana:[40,80],parts:[20,40]},xp:100,fameReward:25},
+const UPGRADES_DEF = [
+  {id:'capital1', name:'主基地升級 Lv2', desc:'解鎖更多地圖格子，金幣上限 x2', cost:{gold:500,parts:50,food:30}, effect:'capital_lv2', req:{}},
+  {id:'capital2', name:'主基地升級 Lv3', desc:'解鎖全部地圖，解鎖遺跡清除', cost:{gold:1500,parts:150,food:100}, effect:'capital_lv3', req:{capital_lv:2}},
+  {id:'goldcap',  name:'強化金庫',       desc:'金幣上限再 x2',                  cost:{gold:300,parts:40},          effect:'goldcap',    req:{}},
+  {id:'faster',   name:'生產加速',       desc:'所有建築生產速度 +50%',           cost:{gold:400,food:50,parts:30},  effect:'faster',     req:{capital_lv:2}},
+  {id:'roads2',   name:'道路升級',       desc:'道路建造費用 -50%',              cost:{gold:200,parts:20},          effect:'roads2',     req:{}},
 ];
 
-const UPGRADES = [
-  {id:"tavern",name:"酒館擴建",desc:"冒險者上限 +2",icon:"🍺",levels:[{cost:{gold:100}},{cost:{gold:300,mana:50}},{cost:{gold:600,mana:120,parts:30}}]},
-  {id:"forge",name:"鍛造工坊",desc:"攻擊力 +20%",icon:"🔨",levels:[{cost:{gold:150,parts:20}},{cost:{gold:400,parts:60}},{cost:{gold:900,parts:150,mana:80}}]},
-  {id:"library",name:"魔法圖書館",desc:"魔素生產 +50%",icon:"📚",levels:[{cost:{gold:200,mana:30}},{cost:{gold:500,mana:100}},{cost:{gold:1000,mana:200,parts:50}}]},
-  {id:"vault",name:"金庫強化",desc:"金幣上限 ×2",icon:"🏦",levels:[{cost:{gold:80,parts:10}},{cost:{gold:250,parts:40}},{cost:{gold:600,parts:100}}]},
-  {id:"scout",name:"斥候小屋",desc:"探索速度 +25%",icon:"🗺️",levels:[{cost:{gold:300,mana:40}},{cost:{gold:700,mana:100,parts:30}},{cost:{gold:1400,mana:200,parts:80}}]},
-];
-
-const ALLIANCE_PROJECTS = [
-  {id:"wall",name:"聯盟城牆",icon:"🧱",desc:"所有公會防禦 +10%，需全員貢獻建材",totalParts:500,totalGold:200,effect:"全員探索速度 +10%"},
-  {id:"portal",name:"傳送門",icon:"🌀",desc:"解鎖聯合遠征功能，需各公會貢獻魔素",totalMana:400,totalGold:300,effect:"解鎖聯合遠征"},
-  {id:"shrine",name:"英雄神殿",icon:"🏯",desc:"所有冒險者經驗值 +25%",totalFame:100,totalGold:500,effect:"全員經驗值 +25%"},
-];
-
-const EXPEDITIONS = [
-  {id:"dragon",name:"巨龍巢穴",icon:"🐉",desc:"需要多個公會合力討伐，獎勵豐厚",minGuilds:2,time:120,loot:{gold:[200,400],mana:[100,200],parts:[50,100]},fameReward:50},
-  {id:"titan",name:"古代巨人遺跡",icon:"🗿",desc:"傳說中的遺跡，單一公會無法攻克",minGuilds:3,time:180,loot:{gold:[400,800],mana:[200,400],parts:[100,200]},fameReward:100},
+// Ruin clear rewards
+const RUIN_REWARDS = [
+  {gold:[20,60],parts:[5,15],food:[0,10]},
+  {gold:[50,120],parts:[15,40],food:[5,20]},
+  {gold:[100,250],parts:[30,80],food:[10,40]},
 ];
 
 let myName = '';
-let S = null;
-let activeTab = 'heroes';
-let allGuilds = {};
-let allianceData = {};
+let W = null; // world state (shared)
+let sideTab = 'build';
+let selectedTile = null;
+let saveTimer = null;
+let tickInterval = null;
 
-function defaultState(name) {
+function defaultWorld() {
+  const tiles = [];
+  for(let i=0;i<COLS*ROWS;i++){
+    const col=i%COLS, row=Math.floor(i/COLS);
+    const cx=Math.floor(COLS/2), cy=Math.floor(ROWS/2);
+    const dist=Math.abs(col-cx)+Math.abs(row-cy);
+    let type=T.FOG;
+    if(i===CAPITAL_IDX) type=T.CAPITAL;
+    else if(dist<=2) type=T.LOCKED;
+    tiles.push({type, level:type===T.CAPITAL?1:0, clearing:false, clearStart:0, clearTime:0});
+  }
+  // scatter some natural features in locked/fog tiles
+  const features=[T.FARM,T.MINE,T.FOREST,T.LAKE,T.RUIN];
+  for(let i=0;i<COLS*ROWS;i++){
+    if(tiles[i].type===T.FOG){
+      const r=Math.random();
+      if(r<0.06) tiles[i].natural=T.RUIN;
+      else if(r<0.14) tiles[i].natural=T.FOREST;
+      else if(r<0.20) tiles[i].natural=T.LAKE;
+    } else if(tiles[i].type===T.LOCKED){
+      const r=Math.random();
+      if(r<0.15) tiles[i].natural=T.RUIN;
+      else if(r<0.28) tiles[i].natural=T.FOREST;
+    }
+  }
   return {
-    name, gold:100, mana:0, parts:0, fame:0,
-    heroSlots:4, heroes:[], activeQuests:{}, questData:{},
-    upgrades:{tavern:0,forge:0,library:0,vault:0,scout:0},
-    log:[], lastTick: Date.now(),
+    tiles, capital_lv:1,
+    gold:100, food:0, parts:10, power:0,
+    goldCap:1000,
+    upgrades:{},
+    log:[],
+    players:{},
+    lastTick: Date.now(),
   };
 }
 
-function fmt(n){return Math.floor(n).toLocaleString();}
+function fmt(n){return Math.floor(n>=1000?n/1000*10/10:n).toLocaleString()+(n>=1000?'k':'');}
+function fmtFull(n){return Math.floor(n).toLocaleString();}
 function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
-function resPretty(k){return{gold:'💰',mana:'🧪',parts:'🔩',fame:'✨'}[k]||k;}
+function resPretty(k){return{gold:'💰',food:'🌾',parts:'⚙️',power:'⚡'}[k]||k;}
 
-function getBonus(){
-  const ap = allianceData.projects||{};
-  const wallDone = ap.wall && ap.wall.done;
-  const shrineDone = ap.shrine && ap.shrine.done;
-  return {
-    atkMult: 1+(S.upgrades.forge||0)*0.2,
-    manaRateMult: 1+(S.upgrades.library||0)*0.5,
-    speedMult: (1+(S.upgrades.scout||0)*0.25) * (wallDone?1.1:1),
-    goldCap: 500*Math.pow(2,S.upgrades.vault||0),
-    xpMult: shrineDone?1.25:1,
-  };
+// ── Connectivity check ──
+function buildAdjacency(){
+  // BFS from capital, through road/settlement/farm/mine/power tiles
+  const passable=new Set([T.ROAD,T.SETTLEMENT,T.FARM,T.MINE,T.CAPITAL,T.RUIN,'power']);
+  const visited=new Set();
+  const queue=[CAPITAL_IDX];
+  visited.add(CAPITAL_IDX);
+  while(queue.length){
+    const idx=queue.shift();
+    const col=idx%COLS, row=Math.floor(idx/COLS);
+    const neighbors=[];
+    if(col>0) neighbors.push(idx-1);
+    if(col<COLS-1) neighbors.push(idx+1);
+    if(row>0) neighbors.push(idx-COLS);
+    if(row<ROWS-1) neighbors.push(idx+COLS);
+    for(const n of neighbors){
+      if(!visited.has(n)&&W.tiles[n]&&passable.has(W.tiles[n].type)){
+        visited.add(n);
+        queue.push(n);
+      }
+    }
+  }
+  return visited;
 }
 
-function guildLevel(){
-  if(S.fame>=300)return 5;
-  if(S.fame>=120)return 4;
-  if(S.fame>=50)return 3;
-  if(S.fame>=15)return 2;
-  return 1;
+function getConnected(){
+  return buildAdjacency();
 }
 
-function idleHeroes(){
-  const busy = Object.values(S.activeQuests||{}).flat();
-  return (S.heroes||[]).filter(h=>!busy.includes(h.id));
+// ── Production rates ──
+function calcRates(){
+  const connected=getConnected();
+  const faster=W.upgrades.faster?1.5:1;
+  let gold=0,food=0,parts=0,power=0;
+  for(let i=0;i<W.tiles.length;i++){
+    const t=W.tiles[i];
+    const lv=t.level||1;
+    const conn=connected.has(i);
+    if(!conn&&t.type!==T.CAPITAL&&t.type!==T.EMPTY&&t.type!==T.LOCKED&&t.type!==T.FOG&&t.type!==T.ROAD) continue;
+    if(t.type===T.CAPITAL)   gold+=lv*0.5*faster;
+    if(t.type===T.SETTLEMENT&&conn) gold+=lv*1*faster;
+    if(t.type===T.FARM&&conn)       food+=lv*0.5*faster;
+    if(t.type===T.MINE&&conn)       parts+=lv*0.3*faster;
+    if(t.type==='power'&&conn)      power+=3;
+  }
+  return {gold,food,parts,power:Math.floor(power)};
+}
+
+// ── Save/load ──
+async function saveWorld(){
+  if(!W) return;
+  W.lastTick=Date.now();
+  try{
+    await set(ref(db,'world2'),W);
+    document.getElementById('sync').textContent='✅';
+    document.getElementById('sync').style.color='#4a6a30';
+  }catch(e){
+    document.getElementById('sync').textContent='⚠️';
+    document.getElementById('sync').style.color='#8a3a20';
+  }
+}
+
+function scheduleSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveWorld,2000);
 }
 
 function addLog(msg){
+  if(!W.log) W.log=[];
   const now=new Date();
   const t=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  if(!S.log) S.log=[];
-  S.log.unshift({t,msg});
-  if(S.log.length>80) S.log.pop();
+  W.log.unshift({t,msg,who:myName});
+  if(W.log.length>100) W.log.pop();
 }
 
-async function saveGuild(){
-  try {
-    S.lastTick = Date.now();
-    await set(ref(db, 'guilds/'+myName), S);
-    const t=new Date();
-    const ts=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0')+':'+t.getSeconds().toString().padStart(2,'0');
-    document.getElementById('sync-bar').textContent='✅ '+ts;
-  } catch(e){
-    document.getElementById('sync-bar').textContent='⚠️ 同步失敗';
-  }
-}
-
-function offlineCalc(){
-  const now=Date.now();
-  const dt=Math.min((now-(S.lastTick||now))/1000,3600);
-  if(dt>2){
-    const bonus=getBonus();
-    const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
-    S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1*dt);
-    S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult*dt);
-  }
-  S.lastTick=Date.now();
-}
-
-window.enterGame = async function(){
-  const input=document.getElementById('nickname-input').value.trim();
-  if(!input){alert('請輸入公會名稱');return;}
-  myName=input;
-  const snap=await get(ref(db,'guilds/'+myName));
-  if(snap.exists()){
-    S=snap.val();
-    if(!S.questData) S.questData={};
-    if(!S.upgrades) S.upgrades={tavern:0,forge:0,library:0,vault:0,scout:0};
-  } else {
-    S=defaultState(myName);
-    addLog('🏰 '+myName+' 公會正式成立！');
-    await saveGuild();
-  }
-  offlineCalc();
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('game').style.display='block';
-  document.getElementById('player-badge').textContent=myName;
-  document.getElementById('my-guild-title').textContent='⚔️ '+myName;
-
-  onValue(ref(db,'guilds'), snap=>{
-    allGuilds = snap.val()||{};
-    if(activeTab==='alliance') renderAlliance();
-    renderOtherGuilds();
-  });
-  onValue(ref(db,'alliance'), snap=>{
-    allianceData = snap.val()||{};
-    if(activeTab==='alliance') renderAlliance();
-  });
-
-  renderAll();
-  setInterval(tick, 1000);
-  setInterval(saveGuild, 20000);
-  setInterval(()=>{if(activeTab==='heroes')renderHeroes();else if(activeTab==='dungeon')renderDungeons();}, 3000);
-};
-
+// ── Tick ──
 function tick(){
-  if(!S) return;
-  const bonus=getBonus();
-  const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
-  S.gold=Math.min(bonus.goldCap,S.gold+(S.heroes||[]).length*0.1);
-  S.mana=Math.min(9999,S.mana+mageCount*0.3*bonus.manaRateMult);
-  S.lastTick=Date.now();
-  checkQuests();
-  updateResourceDisplay();
-}
+  if(!W) return;
+  const now=Date.now();
+  const dt=Math.min((now-(W.lastTick||now))/1000,300);
+  W.lastTick=now;
+  const rates=calcRates();
+  W.gold=Math.min(W.goldCap||1000,W.gold+rates.gold*dt);
+  W.food=Math.min(9999,W.food+rates.food*dt);
+  W.parts=Math.min(9999,W.parts+rates.parts*dt);
+  W.power=rates.power;
 
-function checkQuests(){
-  if(!S||!S.questData) return;
-  const bonus=getBonus();
+  // check clearing
   let changed=false;
-  for(const[dId,qData] of Object.entries(S.questData)){
-    const d=DUNGEONS.find(x=>x.id===dId);
-    if(!d) continue;
-    const elapsed=(Date.now()-qData.startTime)/1000;
-    if(elapsed>=d.time/bonus.speedMult){
-      const heroIds=qData.heroIds||(S.activeQuests[dId]||[]);
-      const gold=rnd(...d.loot.gold);
-      const mana=d.loot.mana?rnd(...d.loot.mana):0;
-      const parts=d.loot.parts?rnd(...d.loot.parts):0;
-      S.gold=Math.min(bonus.goldCap,S.gold+gold);
-      S.mana=Math.min(9999,S.mana+mana);
-      S.parts=Math.min(9999,S.parts+parts);
-      S.fame+=d.fameReward;
-      const heroNames=[];
-      for(const hid of heroIds){
-        const hero=(S.heroes||[]).find(h=>h.id===hid);
-        if(hero){
-          heroNames.push(hero.name);
-          hero.xp+=Math.round(d.xp*bonus.xpMult);
-          if(hero.xp>=hero.level*50){hero.xp-=hero.level*50;hero.level++;addLog(`⬆️ ${hero.name} 升到等級 ${hero.level}！`);}
+  for(let i=0;i<W.tiles.length;i++){
+    const t=W.tiles[i];
+    if(t.clearing){
+      const elapsed=(now-t.clearStart)/1000;
+      if(elapsed>=t.clearTime){
+        t.clearing=false;
+        t.type=t.natural||T.EMPTY;
+        t.level=1;
+        // reward if ruin
+        if(t.natural===T.RUIN){
+          const tier=Math.min(2,Math.floor(W.capital_lv/1));
+          const r=RUIN_REWARDS[tier];
+          const g=rnd(...r.gold),p=rnd(...r.parts),f=rnd(...r.food);
+          W.gold=Math.min(W.goldCap||1000,W.gold+g);
+          W.parts=Math.min(9999,W.parts+p);
+          W.food=Math.min(9999,W.food+f);
+          addLog(`🏚️ ${myName} 清除遺跡！獲得 💰${g} ⚙️${p} 🌾${f}`);
+        } else {
+          addLog(`✅ ${myName} 開墾了新土地`);
         }
-      }
-      delete S.activeQuests[dId];
-      delete S.questData[dId];
-      const lootStr=[gold&&`💰${gold}`,mana&&`🧪${mana}`,parts&&`🔩${parts}`].filter(Boolean).join(' ');
-      addLog(`🎉 ${heroNames.join('、')||'隊伍'} 完成 ${d.name}！獲得 ${lootStr} ✨+${d.fameReward}`);
-    }
-  }
-  if(changed){saveGuild();renderAll();}
-}
-
-function updateResourceDisplay(){
-  if(!S) return;
-  const bonus=getBonus();
-  const mageCount=(S.heroes||[]).filter(h=>h.cls==='法師').length;
-  document.getElementById('res-gold').textContent=fmt(S.gold);
-  document.getElementById('res-mana').textContent=fmt(S.mana);
-  document.getElementById('res-parts').textContent=fmt(S.parts);
-  document.getElementById('res-fame').textContent=fmt(S.fame);
-  document.getElementById('guild-fame-top').textContent=fmt(S.fame);
-  document.getElementById('guild-level').textContent=guildLevel();
-  document.getElementById('rate-gold').textContent=(S.heroes||[]).length>0?`+${((S.heroes||[]).length*0.1).toFixed(1)}/秒`:'';
-  document.getElementById('rate-mana').textContent=mageCount>0?`+${(mageCount*0.3*bonus.manaRateMult).toFixed(1)}/秒`:'';
-}
-
-function renderHeroes(){
-  if(!S) return;
-  const heroes=S.heroes||[];
-  const heroList=document.getElementById('hero-list');
-  const hireList=document.getElementById('hire-list');
-  if(heroes.length===0){
-    heroList.innerHTML='<div class="empty">還沒有冒險者，從下方雇用吧</div>';
-  } else {
-    heroList.innerHTML=heroes.map(h=>{
-      const questEntry=Object.entries(S.activeQuests||{}).find(([,ids])=>ids.includes(h.id));
-      if(questEntry){
-        const [dId]=questEntry;
-        const qData=S.questData&&S.questData[dId];
-        const d=DUNGEONS.find(x=>x.id===dId);
-        let progHtml='';
-        if(qData&&d){
-          const bonus=getBonus();
-          const elapsed=(Date.now()-qData.startTime)/1000;
-          const total=d.time/bonus.speedMult;
-          const pct=Math.min(100,elapsed/total*100);
-          progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${d.icon} ${d.name} — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
-        }
-        return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-quest">探索中</span></div>${progHtml}</div>`;
-      }
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${h.icon} ${h.name}</div><div class="hero-sub">${h.cls} · Lv${h.level} · 攻${Math.round(h.atk*getBonus().atkMult)} · 經驗${h.xp}/${h.level*50}</div></div><span class="badge badge-idle">待命</span></div><div style="font-size:11px;color:#444;margin-top:6px">前往「地下城」頁籤組隊出發</div></div>`;
-    }).join('');
-  }
-  const gl=guildLevel();
-  const hired=heroes.map(h=>h.id);
-  const available=HERO_TEMPLATES.filter(t=>!hired.includes(t.id)&&t.unlock<=gl-1);
-  if(heroes.length>=(S.heroSlots||4)){
-    hireList.innerHTML='<div class="empty">公會人數已滿，升級酒館以容納更多</div>';
-  } else if(available.length===0){
-    hireList.innerHTML='<div class="empty">提升聲望後解鎖更多冒險者</div>';
-  } else {
-    hireList.innerHTML=available.map(t=>{
-      const costStr=Object.entries(t.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
-      const canAfford=Object.entries(t.cost).every(([k,v])=>S[k]>=v);
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${t.icon} ${t.name}</div><div class="hero-sub">${t.cls} · ${t.flavor}</div></div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="hireHero('${t.id}')">雇用 (${costStr})</button></div></div>`;
-    }).join('');
-  }
-}
-
-window.hireHero = function(id){
-  const t=HERO_TEMPLATES.find(x=>x.id===id);
-  if(!t) return;
-  if((S.heroes||[]).length>=(S.heroSlots||4)){alert('公會人數已滿！');return;}
-  for(const[k,v]of Object.entries(t.cost)){if(S[k]<v){alert(`${resPretty(k)}不足！`);return;}}
-  for(const[k,v]of Object.entries(t.cost)){S[k]-=v;}
-  if(!S.heroes) S.heroes=[];
-  S.heroes.push({id:t.id,name:t.name,cls:t.cls,icon:t.icon,atk:t.atk,spd:t.spd,level:1,xp:0});
-  addLog(`✅ 雇用了 ${t.icon} ${t.name}`);
-  saveGuild();renderAll();
-};
-
-window.sendParty = function(dungeonId){
-  if((S.activeQuests||{})[dungeonId]){alert('此地下城已有探索中');return;}
-  const d=DUNGEONS.find(x=>x.id===dungeonId);
-  if(!d) return;
-  const idle=idleHeroes();
-  if(idle.length<d.req.heroCount){alert(`需要 ${d.req.heroCount} 名空閒冒險者`);return;}
-  const checkboxes=document.querySelectorAll(`input.party-check-${dungeonId}:checked`);
-  const selectedIds=Array.from(checkboxes).map(c=>c.value);
-  if(selectedIds.length!==d.req.heroCount){alert(`請選擇剛好 ${d.req.heroCount} 名冒險者`);return;}
-  if(!S.activeQuests) S.activeQuests={};
-  if(!S.questData) S.questData={};
-  S.activeQuests[dungeonId]=selectedIds;
-  S.questData[dungeonId]={startTime:Date.now(),heroIds:selectedIds};
-  const names=selectedIds.map(id=>(S.heroes||[]).find(h=>h.id===id)?.name||'').join('、');
-  addLog(`🏃 ${names} 出發前往 ${d.icon} ${d.name}`);
-  saveGuild();renderAll();
-};
-
-function renderDungeons(){
-  if(!S) return;
-  const bonus=getBonus();
-  document.getElementById('dungeon-list').innerHTML=DUNGEONS.map(d=>{
-    const locked=S.fame<d.req.fame;
-    const active=(S.activeQuests||{})[d.id];
-    const idle=idleHeroes();
-    const notEnough=!locked&&idle.length<d.req.heroCount;
-    const timeStr=Math.round(d.time/bonus.speedMult)+'秒';
-    const lootStr=Object.entries(d.loot).map(([k,[a,b]])=>`${resPretty(k)}${a}-${b}`).join(' ');
-    let progHtml='';
-    if(active){
-      const qData=S.questData&&S.questData[d.id];
-      if(qData){
-        const elapsed=(Date.now()-qData.startTime)/1000;
-        const total=d.time/bonus.speedMult;
-        const pct=Math.min(100,elapsed/total*100);
-        const heroIds=qData.heroIds||[qData.heroId];
-        const heroNames=heroIds.map(id=>(S.heroes||[]).find(h=>h.id===id)?.name||'').join('、');
-        progHtml=`<div class="progress-bar"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div><div class="progress-label">${heroNames} 探索中 — 剩 ${Math.max(0,Math.ceil(total-elapsed))}秒</div>`;
+        // unlock adjacent fog
+        unlockAdjacent(i);
+        changed=true;
       }
     }
-    const statusHtml=active?'<span class="badge badge-quest">探索中</span>':locked?`<span style="font-size:11px;color:#444">需聲望${d.req.fame}</span>`:notEnough?`<span style="font-size:11px;color:#444">需${d.req.heroCount}人（目前空閒${idle.length}人）</span>`:'';
-    let partySelector='';
-    if(!active&&!locked&&!notEnough){
-      const checks=idle.map(h=>`<label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:4px"><input type="checkbox" class="party-check-${d.id}" value="${h.id}"> ${h.icon}${h.name}</label>`).join('');
-      partySelector=`<div style="margin-top:8px"><div style="font-size:11px;color:#555;margin-bottom:4px">選擇 ${d.req.heroCount} 名冒險者：</div><div style="display:flex;gap:10px;flex-wrap:wrap">${checks}</div><button class="btn btn-gold" style="margin-top:8px" onclick="sendParty('${d.id}')">出發探索</button></div>`;
+  }
+  updateTopbar(rates);
+  if(changed){renderMap();scheduleSave();}
+}
+
+function unlockAdjacent(idx){
+  const col=idx%COLS,row=Math.floor(idx/COLS);
+  const neighbors=[];
+  if(col>0) neighbors.push(idx-1);
+  if(col<COLS-1) neighbors.push(idx+1);
+  if(row>0) neighbors.push(idx-COLS);
+  if(row<ROWS-1) neighbors.push(idx+COLS);
+  for(const n of neighbors){
+    if(W.tiles[n]&&W.tiles[n].type===T.FOG){
+      W.tiles[n].type=T.LOCKED;
     }
-    return `<div class="card" style="${locked?'opacity:0.4':''}"><div class="card-row"><div><div class="hero-name">${d.icon} ${d.name}</div><div class="hero-sub">${d.desc} · ${timeStr} · 需${d.req.heroCount}人</div></div>${statusHtml}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${d.fameReward}</span></div>${progHtml}${partySelector}</div>`;
-  }).join('');
+  }
 }
 
-function renderUpgrades(){
-  if(!S) return;
-  document.getElementById('upgrade-list').innerHTML=UPGRADES.map(u=>{
-    const cur=S.upgrades[u.id]||0;
-    if(cur>=u.levels.length){
-      return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">MAX</span></div><div class="hero-sub">${u.desc}</div></div></div></div>`;
+function updateTopbar(rates){
+  if(!W) return;
+  document.getElementById('r-gold').textContent=fmtFull(Math.floor(W.gold));
+  document.getElementById('r-food').textContent=fmtFull(Math.floor(W.food));
+  document.getElementById('r-parts').textContent=fmtFull(Math.floor(W.parts));
+  document.getElementById('r-power').textContent=W.power||0;
+  const r=rates||calcRates();
+  document.getElementById('rr-gold').textContent=r.gold>0?`+${r.gold.toFixed(1)}/s`:'';
+  document.getElementById('rr-food').textContent=r.food>0?`+${r.food.toFixed(1)}/s`:'';
+  document.getElementById('rr-parts').textContent=r.parts>0?`+${r.parts.toFixed(1)}/s`:'';
+  document.getElementById('city-lv').textContent=`主基地 Lv${W.capital_lv||1}`;
+}
+
+// ── Map rendering ──
+function tileIcon(t){
+  if(t.clearing) return '⏳';
+  const icons={
+    [T.FOG]:'🌫️',[T.LOCKED]:'🔒',[T.EMPTY]:'🟫',[T.ROAD]:'🛤️',
+    [T.CAPITAL]:'🏰',[T.SETTLEMENT]:'🏘️',
+    [T.FARM]:'🌾',[T.MINE]:'⚙️',[T.FOREST]:'🌲',[T.LAKE]:'💧',
+    [T.RUIN]:'🏚️',power:'⚡',
+  };
+  return icons[t.type]||'❓';
+}
+
+function renderMap(){
+  if(!W) return;
+  const grid=document.getElementById('map-grid');
+  const connected=getConnected();
+  grid.style.gridTemplateColumns=`repeat(${COLS},52px)`;
+
+  // update existing tiles or create
+  const existing=grid.children;
+  if(existing.length!==W.tiles.length){
+    grid.innerHTML='';
+    W.tiles.forEach((_,i)=>{
+      const el=document.createElement('div');
+      el.className='tile';
+      el.onclick=()=>onTileClick(i);
+      grid.appendChild(el);
+    });
+  }
+  const children=grid.children;
+  for(let i=0;i<W.tiles.length;i++){
+    const t=W.tiles[i];
+    const el=children[i];
+    const type=t.clearing?'clearing':t.type;
+    el.className='tile '+type+(connected.has(i)&&t.type!==T.FOG&&t.type!==T.LOCKED?' connected':'');
+    el.innerHTML='';
+    const icon=document.createElement('span');
+    icon.textContent=tileIcon(t);
+    el.appendChild(icon);
+    if(t.level>1){
+      const lv=document.createElement('div');
+      lv.className='lv';
+      lv.textContent='Lv'+t.level;
+      el.appendChild(lv);
     }
-    const next=u.levels[cur];
-    const costStr=Object.entries(next.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
-    const canAfford=Object.entries(next.cost).every(([k,v])=>S[k]>=v);
-    return `<div class="card"><div class="card-row"><div><div class="hero-name">${u.icon} ${u.name} <span style="font-size:10px;color:#555">Lv${cur}→${cur+1}</span></div><div class="hero-sub">${u.desc}</div><div style="font-size:11px;color:#444;margin-top:3px">費用：${costStr}</div></div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="doUpgrade('${u.id}')">升級</button></div></div>`;
-  }).join('');
-}
-
-window.doUpgrade = function(id){
-  const u=UPGRADES.find(x=>x.id===id);
-  const cur=S.upgrades[id]||0;
-  if(cur>=u.levels.length) return;
-  const next=u.levels[cur];
-  for(const[k,v]of Object.entries(next.cost)){if(S[k]<v){alert(`${resPretty(k)}不足`);return;}}
-  for(const[k,v]of Object.entries(next.cost)){S[k]-=v;}
-  S.upgrades[id]=cur+1;
-  if(id==='tavern') S.heroSlots=(S.heroSlots||4)+2;
-  addLog(`🏛️ 升級了 ${u.icon} ${u.name} 至 Lv${cur+1}`);
-  saveGuild();renderAll();
-};
-
-function renderAlliance(){
-  renderAllianceProjects();
-  renderExpeditions();
-  renderOtherGuilds();
-}
-
-function renderAllianceProjects(){
-  const projects=allianceData.projects||{};
-  document.getElementById('alliance-projects').innerHTML=ALLIANCE_PROJECTS.map(p=>{
-    const pData=projects[p.id]||{};
-    const done=pData.done||false;
-    const contribs=pData.contributions||{};
-    const totalNeeded=Object.entries(p).filter(([k])=>['totalParts','totalGold','totalMana','totalFame'].includes(k));
-    let totalProgress=0,totalRequired=0;
-    const needParts=Object.entries({gold:p.totalGold||0,mana:p.totalMana||0,parts:p.totalParts||0,fame:p.totalFame||0}).filter(([,v])=>v>0);
-    const myContrib=contribs[myName]||{};
-    if(done){
-      return `<div class="alliance-project"><div style="display:flex;align-items:center;justify-content:space-between"><div><div class="ap-name">${p.icon} ${p.name} ✅</div><div class="ap-desc">${p.effect}</div></div><span class="badge badge-idle">已完成</span></div></div>`;
+    if(t.clearing&&t.clearTime>0){
+      const elapsed=(Date.now()-t.clearStart)/1000;
+      const pct=Math.min(100,elapsed/t.clearTime*100);
+      const pb=document.createElement('div');
+      pb.className='prog';
+      pb.style.width=pct+'%';
+      el.appendChild(pb);
     }
-    let totalPct=0;
-    const resRows=needParts.map(([k,need])=>{
-      let gathered=0;
-      Object.values(contribs).forEach(c=>{gathered+=(c[k]||0);});
-      const pct=Math.min(100,gathered/need*100);
-      totalPct+=pct;
-      return `<div style="font-size:11px;color:#555;margin-top:4px">${resPretty(k)} ${fmt(gathered)}/${fmt(need)}<div class="ap-bar"><div class="ap-fill" style="width:${pct.toFixed(1)}%"></div></div></div>`;
-    }).join('');
-    const avgPct=needParts.length>0?totalPct/needParts.length:0;
-    const contribBtns=needParts.map(([k,need])=>{
-      const amounts=[10,50,100].filter(a=>a<=S[k]);
-      return amounts.map(a=>`<button class="btn btn-blue" onclick="contributeProject('${p.id}','${k}',${a})">${resPretty(k)}+${a}</button>`).join('');
-    }).join('');
-    return `<div class="alliance-project"><div class="ap-name">${p.icon} ${p.name}</div><div class="ap-desc">${p.desc}</div><div class="ap-desc" style="color:#5b8dee;margin-top:2px">完成效果：${p.effect}</div>${resRows}<div class="ap-label"><span>整體進度 ${avgPct.toFixed(0)}%</span><span>你已貢獻：${Object.entries(myContrib).map(([k,v])=>`${resPretty(k)}${v}`).join(' ')||'無'}</span></div><div class="contrib-row">${contribBtns||'<span style="font-size:11px;color:#444">資源不足，繼續探索吧</span>'}</div></div>`;
-  }).join('');
-}
-
-window.contributeProject = async function(projectId,resKey,amount){
-  if(S[resKey]<amount){alert('資源不足');return;}
-  S[resKey]-=amount;
-  const contribRef=ref(db,`alliance/projects/${projectId}/contributions/${myName}/${resKey}`);
-  const snap=await get(contribRef);
-  const cur=snap.exists()?snap.val():0;
-  await set(contribRef,cur+amount);
-  const p=ALLIANCE_PROJECTS.find(x=>x.id===projectId);
-  const allContribsSnap=await get(ref(db,`alliance/projects/${projectId}/contributions`));
-  const allContribs=allContribsSnap.val()||{};
-  const needParts=Object.entries({gold:p.totalGold||0,mana:p.totalMana||0,parts:p.totalParts||0,fame:p.totalFame||0}).filter(([,v])=>v>0);
-  let allDone=true;
-  for(const[k,need] of needParts){
-    let gathered=0;
-    Object.values(allContribs).forEach(c=>{gathered+=(c[k]||0);});
-    if(gathered<need){allDone=false;break;}
   }
-  if(allDone){
-    await set(ref(db,`alliance/projects/${projectId}/done`),true);
-    addLog(`🎊 聯盟共同建造 ${p.icon} ${p.name} 完成！`);
-  } else {
-    addLog(`🤝 貢獻了 ${resPretty(resKey)}${amount} 給 ${p.icon} ${p.name}`);
+}
+
+// ── Tile click ──
+function onTileClick(idx){
+  selectedTile=idx;
+  const t=W.tiles[idx];
+  const info=document.getElementById('tile-info');
+  const connected=getConnected();
+  const isConn=connected.has(idx);
+
+  let title='',desc='',actions=[];
+
+  if(t.type===T.FOG){
+    closeTileInfo();return;
+  } else if(t.type===T.LOCKED||t.natural){
+    const natural=t.natural;
+    const timeMap={[T.RUIN]:30,[T.FOREST]:20,[T.LAKE]:25};
+    const baseTime=timeMap[natural]||15;
+    const cost={gold: natural===T.RUIN?80:natural===T.FOREST?40:50};
+    title=(t.clearing?'⏳ 清理中':natural==='ruin'?'🏚️ 廢墟':natural==='forest'?'🌲 森林':natural==='lake'?'💧 湖泊':'🔒 荒地');
+    desc=t.clearing?`正在清理中，完成後解鎖此格`:`清理後可在此建造，需要 ${baseTime} 秒。${natural===T.RUIN?'清除遺跡有機率獲得額外獎勵！':''}`;
+    if(!t.clearing){
+      const canAfford=Object.entries(cost).every(([k,v])=>(W[k]||0)>=v);
+      const costStr=Object.entries(cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+      actions.push(`<button class="btn btn-gold" ${canAfford?'':'disabled'} onclick="clearTile(${idx})">清理 (${costStr})</button>`);
+    }
+  } else if(t.type===T.CAPITAL){
+    title=`🏰 主基地 Lv${t.level}`;
+    desc=`這是你們的主基地，所有道路必須連回這裡才能讓建築運作。升級後解鎖更多功能。`;
+    const nextUpg=UPGRADES_DEF.find(u=>u.effect===`capital_lv${(W.capital_lv||1)+1}`);
+    if(nextUpg&&!W.upgrades[nextUpg.id]){
+      const costStr=Object.entries(nextUpg.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+      const canAfford=Object.entries(nextUpg.cost).every(([k,v])=>(W[k]||0)>=v);
+      actions.push(`<button class="btn btn-gold" ${canAfford?'':'disabled'} onclick="doUpgrade('${nextUpg.id}')">升級主基地 (${costStr})</button>`);
+    }
+  } else if(t.type===T.EMPTY){
+    title='🟫 空地';
+    desc=isConn?'這塊空地已連接主基地，可以建造。':'這塊空地尚未連接主基地，建造道路連接後才能生產資源。';
+    BUILDINGS.forEach(b=>{
+      const costStr=Object.entries(b.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+      const canAfford=Object.entries(b.cost).every(([k,v])=>(W[k]||0)>=v);
+      actions.push(`<button class="btn ${canAfford?'btn-green':''}" ${canAfford?'':'disabled'} onclick="buildOn(${idx},'${b.id}')">${b.icon} 建造${b.name} (${costStr})</button>`);
+    });
+  } else if([T.SETTLEMENT,T.FARM,T.MINE,T.RUIN,'power'].includes(t.type)){
+    const b=BUILDINGS.find(x=>x.type===t.type)||{name:t.type,icon:'🏗️',desc:'建築'};
+    title=`${tileIcon(t)} ${b.name||t.type} Lv${t.level}`;
+    const prodStr=b.produces&&Object.keys(b.produces).length?Object.entries(b.produces).map(([k,v])=>`${resPretty(k)}+${(v*(t.level||1)*(W.upgrades.faster?1.5:1)).toFixed(1)}/s`).join(' '):'';
+    desc=`${b.desc||''}\n${prodStr?'目前生產：'+prodStr:''}\n${isConn?'✅ 已連接主基地':'⚠️ 未連接主基地，無法生產'}`;
+    // upgrade
+    const upgCost={gold:80*(t.level||1),parts:20*(t.level||1)};
+    const canUpg=Object.entries(upgCost).every(([k,v])=>(W[k]||0)>=v);
+    const upgStr=Object.entries(upgCost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+    actions.push(`<button class="btn btn-gold" ${canUpg?'':'disabled'} onclick="upgradeBuilding(${idx})">升級至 Lv${(t.level||1)+1} (${upgStr})</button>`);
+    // demolish
+    actions.push(`<button class="btn" onclick="demolish(${idx})">拆除（退回 50% 資源）</button>`);
+  } else if(t.type===T.ROAD){
+    title='🛤️ 道路';
+    desc=isConn?'已連接主基地，附近建築可以生產資源。':'此道路未連接主基地。';
+    actions.push(`<button class="btn" onclick="demolish(${idx})">拆除道路</button>`);
+  } else if(t.type===T.FOREST){
+    title='🌲 森林';
+    desc='天然森林，可以伐木獲得零件。';
+    const canAfford=(W.gold||0)>=30;
+    actions.push(`<button class="btn btn-gold" ${canAfford?'':'disabled'} onclick="harvestForest(${idx})">伐木 (💰30)</button>`);
+  } else if(t.type===T.LAKE){
+    title='💧 湖泊';
+    desc='天然湖泊，可以捕魚獲得食物。';
+    const canAfford=(W.gold||0)>=20;
+    actions.push(`<button class="btn btn-gold" ${canAfford?'':'disabled'} onclick="harvestLake(${idx})">捕魚 (💰20)</button>`);
   }
-  saveGuild();
-};
 
-function renderExpeditions(){
-  const exps=allianceData.expeditions||{};
-  const portalDone=(allianceData.projects?.portal?.done)||false;
-  if(!portalDone){
-    document.getElementById('expeditions').innerHTML='<div class="empty">先完成聯盟共同建造「🌀 傳送門」才能發起聯合遠征</div>';
-    return;
+  document.getElementById('ti-title').textContent=title;
+  document.getElementById('ti-desc').textContent=desc;
+  document.getElementById('ti-actions').innerHTML=actions.join('');
+  info.style.display='block';
+}
+
+window.closeTileInfo=function(){
+  document.getElementById('tile-info').style.display='none';
+  selectedTile=null;
+}
+
+window.clearTile=function(idx){
+  const t=W.tiles[idx];
+  if(t.clearing) return;
+  const natural=t.natural;
+  const timeMap={[T.RUIN]:30,[T.FOREST]:20,[T.LAKE]:25};
+  const cost={gold:natural===T.RUIN?80:natural===T.FOREST?40:50};
+  for(const[k,v]of Object.entries(cost)){
+    if((W[k]||0)<v){alert(`${resPretty(k)}不足`);return;}
+    W[k]-=v;
   }
-  document.getElementById('expeditions').innerHTML=EXPEDITIONS.map(e=>{
-    const eData=exps[e.id]||{};
-    const active=eData.active||false;
-    const participants=eData.participants||{};
-    const myJoined=participants[myName];
-    const count=Object.keys(participants).length;
-    const lootStr=Object.entries(e.loot).map(([k,[a,b]])=>`${resPretty(k)}${a}-${b}`).join(' ');
-    const timeStr=active&&eData.startTime?`剩 ${Math.max(0,Math.ceil(e.time-(Date.now()-eData.startTime)/1000))}秒`:`需 ${e.minGuilds} 個公會`;
-    const partList=Object.entries(participants).map(([gName,data])=>`<div class="participant-row"><span class="participant-name">⚔️ ${gName}</span><span class="participant-hero">${data.heroName||''}</span></div>`).join('');
-    const canJoin=!myJoined&&idleHeroes().length>0&&!active;
-    const heroOpts=idleHeroes().map(h=>`<option value="${h.id}">${h.icon} ${h.name}</option>`).join('');
-    return `<div class="expedition-card"><div class="card-row"><div><div class="exp-name">${e.icon} ${e.name}</div><div class="exp-desc">${e.desc}</div><div class="exp-req">${timeStr}</div></div>${active?'<span class="badge badge-quest">進行中</span>':''}</div><div class="loot-row">${lootStr.split(' ').map(s=>`<span class="loot-tag">${s}</span>`).join('')}<span class="loot-tag">✨+${e.fameReward}</span></div><div class="participants">${partList}</div>${canJoin?`<div style="display:flex;gap:6px;margin-top:8px;align-items:center"><select id="exp-hero-${e.id}" style="background:#111;color:#aaa;border:1px solid #333;border-radius:6px;padding:4px 8px;font-size:12px">${heroOpts}</select><button class="btn btn-blue" onclick="joinExpedition('${e.id}')">加入遠征</button></div>`:''}${!active&&count>=e.minGuilds&&!myJoined?`<button class="btn btn-gold" style="margin-top:8px;width:100%" onclick="startExpedition('${e.id}')">發動遠征！(${count}/${e.minGuilds}公會)</button>`:''}</div>`;
-  }).join('');
+  const baseTime=timeMap[natural]||15;
+  t.clearing=true;
+  t.clearStart=Date.now();
+  t.clearTime=baseTime;
+  t.type=T.LOCKED;
+  addLog(`🔨 ${myName} 開始清理土地`);
+  closeTileInfo();
+  renderMap();
+  scheduleSave();
 }
 
-window.joinExpedition = async function(expId){
-  const heroId=document.getElementById('exp-hero-'+expId)?.value;
-  const hero=(S.heroes||[]).find(h=>h.id===heroId);
-  if(!hero){alert('請選擇冒險者');return;}
-  await set(ref(db,`alliance/expeditions/${expId}/participants/${myName}`),{heroId,heroName:hero.name+hero.icon});
-  addLog(`🗺️ ${hero.name} 加入聯合遠征 ${EXPEDITIONS.find(e=>e.id===expId)?.name}`);
-  saveGuild();
-};
-
-window.startExpedition = async function(expId){
-  await update(ref(db,`alliance/expeditions/${expId}`),{active:true,startTime:Date.now()});
-  addLog(`⚔️ 聯合遠征發動！`);
-  saveGuild();
-  setTimeout(()=>completeExpedition(expId), EXPEDITIONS.find(e=>e.id===expId).time*1000);
-};
-
-async function completeExpedition(expId){
-  const e=EXPEDITIONS.find(x=>x.id===expId);
-  const snap=await get(ref(db,`alliance/expeditions/${expId}`));
-  if(!snap.exists()||snap.val().completed) return;
-  const participants=snap.val().participants||{};
-  if(!participants[myName]) return;
-  const gold=rnd(...e.loot.gold);
-  const mana=rnd(...e.loot.mana);
-  const parts=rnd(...e.loot.parts);
-  const bonus=getBonus();
-  S.gold=Math.min(bonus.goldCap,S.gold+gold);
-  S.mana=Math.min(9999,S.mana+mana);
-  S.parts=Math.min(9999,S.parts+parts);
-  S.fame+=e.fameReward;
-  await set(ref(db,`alliance/expeditions/${expId}/completed`),true);
-  addLog(`🏆 聯合遠征完成！獲得 💰${gold} 🧪${mana} 🔩${parts} ✨+${e.fameReward}`);
-  saveGuild();renderAll();
-}
-
-function renderOtherGuilds(){
-  const others=Object.entries(allGuilds).filter(([n])=>n!==myName);
-  if(others.length===0){
-    document.getElementById('other-guilds').innerHTML='<div class="empty">目前只有你一個公會，把遊戲連結分享給朋友吧！</div>';
-    return;
+window.buildOn=function(idx,buildingId){
+  const b=BUILDINGS.find(x=>x.id===buildingId);
+  if(!b) return;
+  for(const[k,v]of Object.entries(b.cost)){
+    if((W[k]||0)<v){alert(`${resPretty(k)}不足`);return;}
+    W[k]-=v;
   }
-  document.getElementById('other-guilds').innerHTML=others.map(([name,g])=>{
-    const gl=g.fame>=300?5:g.fame>=120?4:g.fame>=50?3:g.fame>=15?2:1;
-    return `<div class="player-guild-card"><div class="pgc-header"><div class="pgc-name">⚔️ ${name}</div><span style="font-size:11px;color:#555">等級 ${gl}</span></div><div class="pgc-stats">冒險者 ${(g.heroes||[]).length} 人 · 聲望 ${fmt(g.fame||0)} · 💰${fmt(g.gold||0)} 🧪${fmt(g.mana||0)}</div></div>`;
-  }).join('');
+  const t=W.tiles[idx];
+  t.type=b.type;
+  t.level=1;
+  addLog(`🏗️ ${myName} 建造了 ${b.icon}${b.name}`);
+  closeTileInfo();
+  renderMap();
+  scheduleSave();
 }
 
-function renderLog(){
-  const box=document.getElementById('log-box');
-  if(!S.log||S.log.length===0){box.innerHTML='<div class="empty">尚無戰報</div>';return;}
-  box.innerHTML=S.log.map(e=>`<div class="log-entry"><span class="log-time">${e.t}</span>${e.msg}</div>`).join('');
+window.upgradeBuilding=function(idx){
+  const t=W.tiles[idx];
+  const lv=t.level||1;
+  const cost={gold:80*lv,parts:20*lv};
+  for(const[k,v]of Object.entries(cost)){
+    if((W[k]||0)<v){alert(`${resPretty(k)}不足`);return;}
+    W[k]-=v;
+  }
+  t.level=lv+1;
+  addLog(`⬆️ ${myName} 升級了建築至 Lv${lv+1}`);
+  closeTileInfo();
+  renderMap();
+  scheduleSave();
 }
 
-function renderAll(){
-  if(!S) return;
-  updateResourceDisplay();
-  if(activeTab==='heroes') renderHeroes();
-  else if(activeTab==='dungeon') renderDungeons();
-  else if(activeTab==='upgrade') renderUpgrades();
-  else if(activeTab==='alliance') renderAlliance();
-  else if(activeTab==='log') renderLog();
+window.demolish=function(idx){
+  const t=W.tiles[idx];
+  const b=BUILDINGS.find(x=>x.type===t.type);
+  if(b){
+    Object.entries(b.cost).forEach(([k,v])=>{W[k]=(W[k]||0)+Math.floor(v*0.5);});
+  }
+  t.type=T.EMPTY;
+  t.level=0;
+  addLog(`🔨 ${myName} 拆除了建築`);
+  closeTileInfo();
+  renderMap();
+  scheduleSave();
 }
 
-window.switchTab = function(name,el){
-  activeTab=name;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+window.harvestForest=function(idx){
+  if((W.gold||0)<30){alert('💰不足');return;}
+  W.gold-=30;
+  const p=rnd(8,20);
+  W.parts=Math.min(9999,(W.parts||0)+p);
+  addLog(`🌲 ${myName} 伐木獲得 ⚙️${p}`);
+  closeTileInfo();
+  scheduleSave();
+}
+
+window.harvestLake=function(idx){
+  if((W.gold||0)<20){alert('💰不足');return;}
+  W.gold-=20;
+  const f=rnd(10,25);
+  W.food=Math.min(9999,(W.food||0)+f);
+  addLog(`💧 ${myName} 捕魚獲得 🌾${f}`);
+  closeTileInfo();
+  scheduleSave();
+}
+
+window.doUpgrade=function(id){
+  const u=UPGRADES_DEF.find(x=>x.id===id);
+  if(!u||W.upgrades[id]) return;
+  for(const[k,v]of Object.entries(u.cost)){
+    if((W[k]||0)<v){alert(`${resPretty(k)}不足`);return;}
+    W[k]-=v;
+  }
+  W.upgrades[id]=true;
+  if(u.effect==='capital_lv2'){W.capital_lv=2;W.goldCap=(W.goldCap||1000)*2;unlockRing(2);}
+  if(u.effect==='capital_lv3'){W.capital_lv=3;unlockRing(3);}
+  if(u.effect==='goldcap'){W.goldCap=(W.goldCap||1000)*2;}
+  // update capital tile level
+  if(W.tiles[CAPITAL_IDX]) W.tiles[CAPITAL_IDX].level=W.capital_lv||1;
+  addLog(`🏰 ${myName} 升級了主基地至 Lv${W.capital_lv}`);
+  closeTileInfo();
+  renderMap();
+  renderSide();
+  scheduleSave();
+}
+
+function unlockRing(ring){
+  const cx=Math.floor(COLS/2),cy=Math.floor(ROWS/2);
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const idx=r*COLS+c;
+    const dist=Math.abs(c-cx)+Math.abs(r-cy);
+    if(dist<=ring+2&&W.tiles[idx].type===T.FOG){
+      W.tiles[idx].type=T.LOCKED;
+    }
+  }
+}
+
+// ── Side panel ──
+window.showSideTab=function(name,el){
+  sideTab=name;
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  renderAll();
-};
+  renderSide();
+}
+
+function renderSide(){
+  const c=document.getElementById('side-content');
+  if(sideTab==='build') renderBuildTab(c);
+  else if(sideTab==='players') renderPlayersTab(c);
+  else if(sideTab==='log') renderLogTab(c);
+}
+
+function renderBuildTab(c){
+  const done=Object.keys(W.upgrades||{});
+  const available=UPGRADES_DEF.filter(u=>{
+    if(done.includes(u.id)) return false;
+    if(u.req.capital_lv&&(W.capital_lv||1)<u.req.capital_lv) return false;
+    return true;
+  });
+  let html='<div class="s-title">研究升級</div>';
+  if(available.length===0){
+    html+='<div class="empty-msg">所有可用升級已完成</div>';
+  } else {
+    available.forEach(u=>{
+      const costStr=Object.entries(u.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+      const canAfford=Object.entries(u.cost).every(([k,v])=>(W[k]||0)>=v);
+      html+=`<div class="info-card"><div class="info-name">${u.name}</div><div class="info-sub">${u.desc}</div><div class="info-cost">費用：${costStr}</div><button class="btn ${canAfford?'btn-gold':''}" ${canAfford?'':'disabled'} onclick="doUpgrade('${u.id}')">研究</button></div>`;
+    });
+  }
+  html+='<div class="s-title" style="margin-top:12px">建造說明</div>';
+  BUILDINGS.forEach(b=>{
+    const costStr=Object.entries(b.cost).map(([k,v])=>`${resPretty(k)}${v}`).join(' ');
+    html+=`<div class="info-card"><div class="info-name">${b.icon} ${b.name}</div><div class="info-sub">${b.desc}</div><div class="info-cost">${costStr}</div></div>`;
+  });
+  c.innerHTML=html;
+}
+
+function renderPlayersTab(c){
+  const players=W.players||{};
+  const entries=Object.entries(players);
+  let html='<div class="s-title">線上玩家</div>';
+  if(entries.length===0){
+    html+='<div class="empty-msg">邀請朋友一起重建廢土！</div>';
+  } else {
+    entries.forEach(([name,data])=>{
+      const last=data.lastSeen?Math.floor((Date.now()-data.lastSeen)/60000):999;
+      const online=last<5;
+      html+=`<div class="player-row"><div><div class="player-name">${online?'🟢':'⚫'} ${name}</div><div class="player-stats">上次在線：${last<1?'剛剛':last+'分鐘前'}</div></div></div>`;
+    });
+  }
+  c.innerHTML=html;
+}
+
+function renderLogTab(c){
+  const logs=W.log||[];
+  let html='<div class="s-title">最近動態</div>';
+  if(logs.length===0){
+    html+='<div class="empty-msg">還沒有任何動態</div>';
+  } else {
+    html+=logs.map(e=>`<div class="log-entry"><span class="log-time">${e.t}</span>${e.msg}</div>`).join('');
+  }
+  c.innerHTML=html;
+}
+
+// ── Enter game ──
+window.enterGame=async function(){
+  const input=document.getElementById('nick-input').value.trim();
+  if(!input){alert('請輸入名字');return;}
+  myName=input;
+
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='flex';
+
+  // load world
+  const snap=await get(ref(db,'world2'));
+  if(snap.exists()){
+    W=snap.val();
+    if(!W.upgrades) W.upgrades={};
+    if(!W.log) W.log=[];
+    if(!W.players) W.players={};
+    // offline tick
+    const now=Date.now();
+    const dt=Math.min((now-(W.lastTick||now))/1000,600);
+    if(dt>2){
+      const rates=calcRates();
+      W.gold=Math.min(W.goldCap||1000,W.gold+rates.gold*dt);
+      W.food=Math.min(9999,W.food+rates.food*dt);
+      W.parts=Math.min(9999,W.parts+rates.parts*dt);
+    }
+    W.lastTick=now;
+  } else {
+    W=defaultWorld();
+    addLog('☢️ 廢墟公會建立！核戰後的重建開始了');
+    await saveWorld();
+  }
+
+  // update player presence
+  W.players[myName]={lastSeen:Date.now()};
+  addLog(`👤 ${myName} 加入了廢土重建`);
+
+  renderMap();
+  renderSide();
+  updateTopbar();
+
+  // realtime sync
+  onValue(ref(db,'world2'),snap=>{
+    if(!snap.exists()) return;
+    const remote=snap.val();
+    // merge: take remote but keep local rates ticking
+    W=remote;
+    if(!W.upgrades) W.upgrades={};
+    if(!W.log) W.log=[];
+    if(!W.players) W.players={};
+    renderMap();
+    if(sideTab==='log'||sideTab==='players') renderSide();
+    updateTopbar();
+  });
+
+  tickInterval=setInterval(()=>{
+    tick();
+    // update player presence every 60s
+    if(Math.floor(Date.now()/60000)!==Math.floor((W.players[myName]?.lastSeen||0)/60000)){
+      W.players[myName]={lastSeen:Date.now()};
+      scheduleSave();
+    }
+  },1000);
+}
+
+window.addEventListener('beforeunload',()=>{if(W) saveWorld();});
 </script>
 </body>
 </html>
